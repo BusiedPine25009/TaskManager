@@ -40,7 +40,7 @@ public class RecurringTask : TaskItem
         {
             DueDate = DueDate.AddDays(RepeatEveryDays);
         }
-        while (DueDate.Date < DateTime.Today);
+        while (DueDate < DateTime.Now);
 
         State = TaskState.New;
     }

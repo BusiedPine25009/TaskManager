@@ -17,12 +17,19 @@ public class TaskService
 
     // Хранилище данных, внедряется через конструктор.
     private readonly JsonTaskStorage _storage;
+    private readonly RecycleBinService? _recycleBin;
 
     /// <summary>Создаёт сервис с указанным хранилищем.</summary>
     /// <param name="storage">Объект, который сохраняет и загружает задачи.</param>
     public TaskService(JsonTaskStorage storage)
+        : this(storage, null)
+    {
+    }
+
+    public TaskService(JsonTaskStorage storage, RecycleBinService? recycleBin)
     {
         _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+        _recycleBin = recycleBin;
     }
 
     /// <summary>Общее количество задач.</summary>
@@ -45,6 +52,14 @@ public class TaskService
         _tasks.AddRange(loaded);
     }
 
+    public void RestoreFromBackup()
+    {
+        List<TaskItem> loaded = _storage.LoadBackup();
+        _tasks.Clear();
+        _tasks.AddRange(loaded);
+        Save();
+    }
+
     /// <summary>
     /// Добавляет новую задачу и сразу сохраняет данные.
     /// </summary>
@@ -57,7 +72,7 @@ public class TaskService
 
         // Название уже проверено в свойстве Title; здесь проверяем срок.
         // Для старых задач при редактировании это правило не действует.
-        if (task.DueDate.Date < DateTime.Today)
+        if (task.DueDate < DateTime.Now)
             throw new ArgumentException("Срок выполнения новой задачи не может быть в прошлом.");
 
         _tasks.Add(task);
@@ -73,6 +88,17 @@ public class TaskService
     {
         TaskItem task = FindOrThrow(id);
         _tasks.Remove(task);
+        _recycleBin?.Add(task);
+        Save();
+    }
+
+    public void Restore(TaskItem task)
+    {
+        if (task == null)
+            throw new ArgumentNullException(nameof(task));
+        if (_tasks.Any(existing => existing.Id == task.Id))
+            throw new InvalidOperationException("Задача с таким идентификатором уже существует.");
+        _tasks.Add(task);
         Save();
     }
 
@@ -90,6 +116,23 @@ public class TaskService
         task.Priority = priority;
         task.State = state;
 
+        Save();
+    }
+
+    /// <summary>
+    /// Заменяет задачу, сохраняя её идентификатор и дату создания.
+    /// Используется интерфейсом при смене вида задачи.
+    /// </summary>
+    public void Update(TaskItem replacement)
+    {
+        if (replacement == null)
+            throw new ArgumentNullException(nameof(replacement));
+
+        TaskItem current = FindOrThrow(replacement.Id);
+        replacement.CreatedAt = current.CreatedAt;
+
+        int index = _tasks.IndexOf(current);
+        _tasks[index] = replacement;
         Save();
     }
 

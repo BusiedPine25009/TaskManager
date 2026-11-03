@@ -54,7 +54,8 @@ public class TaskItem
     }
 
     /// <summary>Срок выполнения.</summary>
-    public DateTime DueDate { get; set; } = DateTime.Today;
+    [JsonConverter(typeof(LegacyDueDateConverter))]
+    public DateTime DueDate { get; set; } = DateTime.Today.AddHours(23).AddMinutes(59);
 
     /// <summary>Приоритет задачи.</summary>
     public Priority Priority { get; set; } = Priority.Medium;
@@ -70,7 +71,7 @@ public class TaskItem
     /// Вычисляется на лету, в файл не сохраняется (JsonIgnore).
     /// </summary>
     [JsonIgnore]
-    public bool IsOverdue => State != TaskState.Done && DueDate.Date < DateTime.Today;
+    public bool IsOverdue => State != TaskState.Done && DueDate < DateTime.Now;
 
     /// <summary>
     /// Название вида задачи для отображения в интерфейсе.

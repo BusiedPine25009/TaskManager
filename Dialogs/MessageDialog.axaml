@@ -1,0 +1,13 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="TaskManager.Dialogs.MessageDialog"
+        Width="420"
+        MinHeight="180"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Title="TaskManager">
+    <StackPanel Margin="24" Spacing="16">
+        <TextBlock x:Name="MessageText" FontSize="15" TextWrapping="Wrap"/>
+        <Button Content="ОК" HorizontalAlignment="Right" MinWidth="90" Click="CloseClick"/>
+    </StackPanel>
+</Window>

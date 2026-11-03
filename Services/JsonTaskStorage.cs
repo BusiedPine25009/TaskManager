@@ -40,6 +40,7 @@ public class JsonTaskStorage
 
     /// <summary>Путь к файлу с данными (для показа пользователю и в отчёте).</summary>
     public string FilePath => _filePath;
+    public string BackupFilePath => _filePath + ".bak";
 
     /// <summary>
     /// Путь по умолчанию: папка данных пользователя / TaskManager / tasks.json.
@@ -72,18 +73,15 @@ public class JsonTaskStorage
         }
         catch (JsonException ex)
         {
-            // Файл не является корректным JSON
-            throw new InvalidDataException("Файл данных повреждён и не может быть прочитан.", ex);
+            throw CorruptFileException(ex);
         }
         catch (NotSupportedException ex)
         {
-            // В файле указан неизвестный вид задачи (например, файл от другой версии программы)
-            throw new InvalidDataException("Файл данных содержит неизвестный вид задачи.", ex);
+            throw CorruptFileException(ex);
         }
         catch (ArgumentException ex)
         {
-            // В файле есть значения, не прошедшие проверку в свойствах (например, пустое название)
-            throw new InvalidDataException($"Файл данных содержит некорректные значения: {ex.Message}", ex);
+            throw CorruptFileException(ex);
         }
     }
 
@@ -104,6 +102,37 @@ public class JsonTaskStorage
 
         string tempPath = _filePath + ".tmp";
         File.WriteAllText(tempPath, json);
+        if (File.Exists(_filePath))
+            File.Copy(_filePath, BackupFilePath, overwrite: true);
         File.Move(tempPath, _filePath, overwrite: true);
+    }
+
+    /// <summary>Reads the backup only after the user explicitly chooses recovery.</summary>
+    public List<TaskItem> LoadBackup()
+    {
+        if (!File.Exists(BackupFilePath))
+            throw new FileNotFoundException("Резервная копия не найдена.", BackupFilePath);
+
+        string json = File.ReadAllText(BackupFilePath);
+        return JsonSerializer.Deserialize<List<TaskItem>>(json, Options) ?? new List<TaskItem>();
+    }
+
+    private InvalidDataException CorruptFileException(Exception inner)
+    {
+        string copyPath = _filePath + $".corrupt-{DateTime.Now:yyyyMMdd-HHmmss}";
+        try
+        {
+            File.Copy(_filePath, copyPath, overwrite: false);
+        }
+        catch (IOException)
+        {
+            copyPath = "не удалось создать отдельную копию";
+        }
+
+        string backupHint = File.Exists(BackupFilePath)
+            ? $" Доступна резервная копия: {BackupFilePath}"
+            : string.Empty;
+        return new InvalidDataException(
+            $"Файл данных повреждён. Копия сохранена: {copyPath}.{backupHint}", inner);
     }
 }

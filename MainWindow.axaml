@@ -1,9 +1,125 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:local="using:TaskManager"
+        xmlns:vm="using:TaskManager.ViewModels"
+        x:DataType="local:MainWindow"
         x:Class="TaskManager.MainWindow"
-        Title="TaskManager">
-    Welcome to Avalonia!
+        Width="1120" Height="760" MinWidth="720" MinHeight="560"
+        WindowStartupLocation="CenterScreen" Title="TaskManager">
+    <Window.Styles>
+        <Style Selector="TextBlock.error">
+            <Setter Property="Foreground" Value="#C83C3C"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+        <Style Selector="Button.action">
+            <Setter Property="Padding" Value="8,5"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="28">
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,24">
+            <StackPanel Spacing="4">
+                <TextBlock Text="TaskManager" FontSize="30" FontWeight="SemiBold"/>
+                <TextBlock Text="Управляй задачами и успевай больше" Opacity="0.7" FontSize="15"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Content="{Binding ThemeButtonText}" ToolTip.Tip="{Binding ThemeTooltip}"
+                        Click="ThemeClick"/>
+                <Button Content="{Binding BinButtonText}" Click="OpenBinClick"/>
+                <Button Content="Добавить задачу" Classes="accent" Click="AddTaskClick"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,*,*" ColumnSpacing="12" Margin="0,0,0,20">
+            <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}" CornerRadius="12" Padding="16">
+                <StackPanel Spacing="5"><TextBlock Text="Всего задач" Opacity="0.7"/>
+                    <TextBlock Text="{Binding TotalCount}" FontSize="26" FontWeight="SemiBold"/></StackPanel>
+            </Border>
+            <Border Grid.Column="1" Background="{DynamicResource SystemControlBackgroundAltHighBrush}" CornerRadius="12" Padding="16">
+                <StackPanel Spacing="5"><TextBlock Text="Выполнено" Opacity="0.7"/>
+                    <TextBlock Text="{Binding DoneCount}" FontSize="26" FontWeight="SemiBold"/></StackPanel>
+            </Border>
+            <Border Grid.Column="2" Background="{DynamicResource SystemControlBackgroundAltHighBrush}" CornerRadius="12" Padding="16">
+                <StackPanel Spacing="5"><TextBlock Text="Просрочено" Opacity="0.7"/>
+                    <TextBlock Text="{Binding OverdueCount}" FontSize="26" FontWeight="SemiBold"/></StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10" Margin="0,0,0,18">
+            <TextBox x:Name="SearchBox" PlaceholderText="Поиск по названию и описанию" TextChanged="FilterChanged"/>
+            <ComboBox x:Name="StateFilter" Grid.Column="1" Width="150" SelectionChanged="FilterChanged"/>
+            <ComboBox x:Name="PriorityFilter" Grid.Column="2" Width="150" SelectionChanged="FilterChanged"/>
+            <Button Grid.Column="3" Content="Сбросить" Click="ResetFiltersClick"/>
+        </Grid>
+
+        <Grid Grid.Row="3">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding VisibleTasks}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TaskCardViewModel">
+                            <Border Classes="card">
+                                <Grid ColumnDefinitions="5,*,Auto" ColumnSpacing="14">
+                                    <Border Background="{Binding PriorityBrush}" CornerRadius="3"/>
+                                    <StackPanel Grid.Column="1" Spacing="7" MinWidth="0">
+                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                            <TextBlock Text="{Binding Title}" FontSize="17" FontWeight="SemiBold"
+                                                       TextWrapping="Wrap"/>
+                                            <Border Grid.Column="1" Background="#FFF0E8" CornerRadius="8"
+                                                    Padding="7,3" IsVisible="{Binding IsOverdue}">
+                                                <TextBlock Text="Просрочено" Foreground="#B5473F" FontSize="11"/>
+                                            </Border>
+                                        </Grid>
+                                        <TextBlock Text="{Binding Description}" Opacity="0.72"
+                                                   TextWrapping="Wrap" IsVisible="{Binding HasDescription}"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="14">
+                                            <TextBlock Text="{Binding DueDateText}"/>
+                                            <TextBlock Text="{Binding RemainingText}" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="14">
+                                            <TextBlock Text="{Binding PriorityText}"/>
+                                            <TextBlock Text="{Binding TypeText}"/>
+                                            <TextBlock Text="{Binding DetailsText}" IsVisible="{Binding HasDetails}"
+                                                       TextWrapping="Wrap"/>
+                                            <Border Background="{Binding StateBrush}" CornerRadius="8" Padding="7,3">
+                                                <TextBlock Text="{Binding StateText}" Foreground="White" FontSize="11"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Spacing="6" VerticalAlignment="Center">
+                                        <Button Classes="action" Content="Изменить" Tag="{Binding}" Click="EditTaskClick"/>
+                                        <Button Classes="action" Content="Удалить" Tag="{Binding}" Click="DeleteTaskClick"/>
+                                        <Button Classes="action" Content="Готово" Tag="{Binding}"
+                                                IsVisible="{Binding CanMarkDone}" Click="MarkDoneClick"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8"
+                        IsVisible="{Binding IsEmptyStateVisible}">
+                <TextBlock Text="{Binding EmptyTitle}" FontSize="22" FontWeight="SemiBold"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding EmptyMessage}" Opacity="0.7"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="3" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                Margin="0,0,8,8" Padding="14,10" CornerRadius="10"
+                Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                IsVisible="{Binding IsToastVisible}">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinWidth="260">
+                <TextBlock Text="{Binding ToastMessage}" TextWrapping="Wrap"/>
+                <Button Grid.Column="1" Content="×" Click="CloseToastClick"/>
+            </Grid>
+        </Border>
+    </Grid>
 </Window>

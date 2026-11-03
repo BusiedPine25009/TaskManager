@@ -1,0 +1,18 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="TaskManager.Dialogs.ConfirmationDialog"
+        Width="440"
+        MinHeight="180"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Title="Подтверждение">
+    <StackPanel Margin="24" Spacing="18">
+        <TextBlock x:Name="MessageText"
+                   FontSize="15"
+                   TextWrapping="Wrap"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+            <Button Content="Отмена" Click="CancelClick"/>
+            <Button Content="Удалить" Classes="accent" Click="ConfirmClick"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

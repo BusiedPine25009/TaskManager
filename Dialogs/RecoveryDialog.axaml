@@ -1,0 +1,14 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:CompileBindings="False"
+        x:Class="TaskManager.Dialogs.RecoveryDialog"
+        Width="500" MinHeight="220" CanResize="False"
+        WindowStartupLocation="CenterOwner" Title="Восстановление данных">
+    <StackPanel Margin="24" Spacing="16">
+        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" FontSize="15"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+            <Button Content="Не восстанавливать" Click="CancelClick"/>
+            <Button Content="Восстановить резервную копию" Classes="accent" Click="RestoreClick"/>
+        </StackPanel>
+    </StackPanel>
+</Window>
