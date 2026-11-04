@@ -8,94 +8,129 @@
         WindowStartupLocation="CenterScreen" Title="TaskManager">
     <Window.Styles>
         <Style Selector="TextBlock.error">
-            <Setter Property="Foreground" Value="#C83C3C"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+            <Setter Property="FontSize" Value="12" />
         </Style>
-        <Style Selector="Border.card">
-            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="16"/>
-            <Setter Property="Margin" Value="0,0,0,10"/>
+        <Style Selector="TextBlock.section-label">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+        </Style>
+        <Style Selector="Border.task-card">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="Margin" Value="0,0,0,10" />
         </Style>
         <Style Selector="Button.action">
-            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="MinHeight" Value="31" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="FontSize" Value="12" />
         </Style>
     </Window.Styles>
 
-    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="28">
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,24">
-            <StackPanel Spacing="4">
-                <TextBlock Text="TaskManager" FontSize="30" FontWeight="SemiBold"/>
-                <TextBlock Text="Управляй задачами и успевай больше" Opacity="0.7" FontSize="15"/>
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="26">
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="20" Margin="0,0,0,22">
+            <StackPanel Spacing="4" VerticalAlignment="Center">
+                <TextBlock Text="TaskManager" FontSize="29" FontWeight="SemiBold" LetterSpacing="-0.5" />
+                <TextBlock Text="Планируйте важное. Остальное — по порядку." Classes="secondary" FontSize="13" />
             </StackPanel>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                <Button Content="{Binding ThemeButtonText}" ToolTip.Tip="{Binding ThemeTooltip}"
-                        Click="ThemeClick"/>
-                <Button Content="{Binding BinButtonText}" Click="OpenBinClick"/>
-                <Button Content="Добавить задачу" Classes="accent" Click="AddTaskClick"/>
-            </StackPanel>
+            <WrapPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center"
+                       Orientation="Horizontal" ItemSpacing="8">
+                <Button Classes="secondary" Content="{Binding ThemeButtonText}" ToolTip.Tip="{Binding ThemeTooltip}"
+                        Click="ThemeClick" Width="40" Padding="0" />
+                <Button Classes="secondary" Content="{Binding BinButtonText}" ToolTip.Tip="Открыть корзину"
+                        Click="OpenBinClick" />
+                <Button Content="＋  Добавить задачу" Classes="accent" Click="AddTaskClick" />
+            </WrapPanel>
         </Grid>
 
-        <Grid Grid.Row="1" ColumnDefinitions="*,*,*" ColumnSpacing="12" Margin="0,0,0,20">
-            <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}" CornerRadius="12" Padding="16">
-                <StackPanel Spacing="5"><TextBlock Text="Всего задач" Opacity="0.7"/>
-                    <TextBlock Text="{Binding TotalCount}" FontSize="26" FontWeight="SemiBold"/></StackPanel>
-            </Border>
-            <Border Grid.Column="1" Background="{DynamicResource SystemControlBackgroundAltHighBrush}" CornerRadius="12" Padding="16">
-                <StackPanel Spacing="5"><TextBlock Text="Выполнено" Opacity="0.7"/>
-                    <TextBlock Text="{Binding DoneCount}" FontSize="26" FontWeight="SemiBold"/></StackPanel>
-            </Border>
-            <Border Grid.Column="2" Background="{DynamicResource SystemControlBackgroundAltHighBrush}" CornerRadius="12" Padding="16">
-                <StackPanel Spacing="5"><TextBlock Text="Просрочено" Opacity="0.7"/>
-                    <TextBlock Text="{Binding OverdueCount}" FontSize="26" FontWeight="SemiBold"/></StackPanel>
-            </Border>
-        </Grid>
+        <Border Grid.Row="1" Classes="surface" Padding="0" Margin="0,0,0,18">
+            <Grid ColumnDefinitions="*,*,*">
+                <StackPanel Margin="17,13" Spacing="4">
+                    <TextBlock Text="ВСЕГО ЗАДАЧ" Classes="section-label" />
+                    <TextBlock Text="{Binding TotalCount}" FontSize="25" FontWeight="SemiBold" />
+                </StackPanel>
+                <Border Grid.Column="1" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0">
+                    <StackPanel Margin="17,13" Spacing="4">
+                        <TextBlock Text="ВЫПОЛНЕНО" Classes="section-label" />
+                        <TextBlock Text="{Binding DoneCount}" FontSize="25" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Border>
+                <StackPanel Grid.Column="2" Margin="17,13" Spacing="4">
+                    <TextBlock Text="ПРОСРОЧЕНО" Classes="section-label" />
+                    <TextBlock Text="{Binding OverdueCount}" FontSize="25" FontWeight="SemiBold"
+                               Foreground="{DynamicResource DangerBrush}" />
+                </StackPanel>
+            </Grid>
+        </Border>
 
-        <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10" Margin="0,0,0,18">
-            <TextBox x:Name="SearchBox" PlaceholderText="Поиск по названию и описанию" TextChanged="FilterChanged"/>
-            <ComboBox x:Name="StateFilter" Grid.Column="1" Width="150" SelectionChanged="FilterChanged"/>
-            <ComboBox x:Name="PriorityFilter" Grid.Column="2" Width="150" SelectionChanged="FilterChanged"/>
-            <Button Grid.Column="3" Content="Сбросить" Click="ResetFiltersClick"/>
-        </Grid>
+        <Border Grid.Row="2" Classes="surface" Padding="9" Margin="0,0,0,16">
+            <WrapPanel Orientation="Horizontal" VerticalAlignment="Center" ItemSpacing="8" LineSpacing="8">
+                <TextBox x:Name="SearchBox" PlaceholderText="Поиск по задачам" TextChanged="FilterChanged"
+                         Width="260" MinWidth="180" />
+                <ComboBox x:Name="StateFilter" Width="140" SelectionChanged="FilterChanged" />
+                <ComboBox x:Name="PriorityFilter" Width="140" SelectionChanged="FilterChanged" />
+                <Button Classes="secondary" Content="Сбросить" ToolTip.Tip="Сбросить поиск и фильтры"
+                        Click="ResetFiltersClick" />
+            </WrapPanel>
+        </Border>
 
         <Grid Grid.Row="3">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding VisibleTasks}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:TaskCardViewModel">
-                            <Border Classes="card">
-                                <Grid ColumnDefinitions="5,*,Auto" ColumnSpacing="14">
-                                    <Border Background="{Binding PriorityBrush}" CornerRadius="3"/>
-                                    <StackPanel Grid.Column="1" Spacing="7" MinWidth="0">
+                            <Border Classes="task-card">
+                                <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="14">
+                                    <Border Background="{Binding PriorityBrush}" CornerRadius="2" />
+                                    <StackPanel Grid.Column="1" Spacing="9" MinWidth="0">
                                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                                            <TextBlock Text="{Binding Title}" FontSize="17" FontWeight="SemiBold"
-                                                       TextWrapping="Wrap"/>
-                                            <Border Grid.Column="1" Background="#FFF0E8" CornerRadius="8"
-                                                    Padding="7,3" IsVisible="{Binding IsOverdue}">
-                                                <TextBlock Text="Просрочено" Foreground="#B5473F" FontSize="11"/>
+                                            <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold"
+                                                       TextWrapping="Wrap" />
+                                            <Border Grid.Column="1" Background="{DynamicResource DangerSurfaceBrush}"
+                                                    CornerRadius="6" Padding="8,4" IsVisible="{Binding IsOverdue}">
+                                                <TextBlock Text="Просрочено" Foreground="{DynamicResource DangerBrush}"
+                                                           FontSize="11" FontWeight="SemiBold" />
                                             </Border>
                                         </Grid>
-                                        <TextBlock Text="{Binding Description}" Opacity="0.72"
-                                                   TextWrapping="Wrap" IsVisible="{Binding HasDescription}"/>
-                                        <StackPanel Orientation="Horizontal" Spacing="14">
-                                            <TextBlock Text="{Binding DueDateText}"/>
-                                            <TextBlock Text="{Binding RemainingText}" FontWeight="SemiBold"/>
-                                        </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Spacing="14">
-                                            <TextBlock Text="{Binding PriorityText}"/>
-                                            <TextBlock Text="{Binding TypeText}"/>
-                                            <TextBlock Text="{Binding DetailsText}" IsVisible="{Binding HasDetails}"
-                                                       TextWrapping="Wrap"/>
-                                            <Border Background="{Binding StateBrush}" CornerRadius="8" Padding="7,3">
-                                                <TextBlock Text="{Binding StateText}" Foreground="White" FontSize="11"/>
+                                        <TextBlock Text="{Binding Description}" Classes="secondary" FontSize="13"
+                                                   TextWrapping="Wrap" IsVisible="{Binding HasDescription}" />
+                                        <WrapPanel Orientation="Horizontal" ItemSpacing="18" LineSpacing="6">
+                                            <StackPanel Spacing="3">
+                                                <TextBlock Text="СРОК" Classes="section-label" />
+                                                <TextBlock Text="{Binding DueDateText}" FontSize="12" />
+                                            </StackPanel>
+                                            <StackPanel Spacing="3">
+                                                <TextBlock Text="ОСТАЛОСЬ" Classes="section-label" />
+                                                <TextBlock Text="{Binding RemainingText}" FontSize="12" FontWeight="SemiBold" />
+                                            </StackPanel>
+                                        </WrapPanel>
+                                        <WrapPanel Orientation="Horizontal" ItemSpacing="7" LineSpacing="6">
+                                            <Border Background="{DynamicResource SubtleBrush}" CornerRadius="5" Padding="8,4">
+                                                <TextBlock Text="{Binding PriorityText}" FontSize="11" />
                                             </Border>
-                                        </StackPanel>
+                                            <Border Background="{DynamicResource SubtleBrush}" CornerRadius="5" Padding="8,4">
+                                                <TextBlock Text="{Binding TypeText}" FontSize="11" />
+                                            </Border>
+                                            <Border Background="{DynamicResource SubtleBrush}" CornerRadius="5" Padding="8,4"
+                                                    IsVisible="{Binding HasDetails}">
+                                                <TextBlock Text="{Binding DetailsText}" FontSize="11" TextWrapping="Wrap" />
+                                            </Border>
+                                            <Border Background="{DynamicResource HoverBrush}" CornerRadius="5" Padding="8,4">
+                                                <TextBlock Text="{Binding StateText}" FontSize="11" FontWeight="SemiBold" />
+                                            </Border>
+                                        </WrapPanel>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2" Spacing="6" VerticalAlignment="Center">
-                                        <Button Classes="action" Content="Изменить" Tag="{Binding}" Click="EditTaskClick"/>
-                                        <Button Classes="action" Content="Удалить" Tag="{Binding}" Click="DeleteTaskClick"/>
-                                        <Button Classes="action" Content="Готово" Tag="{Binding}"
-                                                IsVisible="{Binding CanMarkDone}" Click="MarkDoneClick"/>
+                                        <Button Classes="action secondary" Content="Изменить" ToolTip.Tip="Изменить задачу"
+                                                Tag="{Binding}" Click="EditTaskClick" />
+                                        <Button Classes="action danger" Content="Удалить" ToolTip.Tip="Переместить в корзину"
+                                                Tag="{Binding}" Click="DeleteTaskClick" />
+                                        <Button Classes="action accent" Content="Готово" ToolTip.Tip="Отметить выполненной"
+                                                Tag="{Binding}" IsVisible="{Binding CanMarkDone}" Click="MarkDoneClick" />
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -103,23 +138,25 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8"
-                        IsVisible="{Binding IsEmptyStateVisible}">
-                <TextBlock Text="{Binding EmptyTitle}" FontSize="22" FontWeight="SemiBold"
-                           HorizontalAlignment="Center"/>
-                <TextBlock Text="{Binding EmptyMessage}" Opacity="0.7"
-                           HorizontalAlignment="Center"/>
-            </StackPanel>
+            <Border Classes="surface" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="28"
+                    MaxWidth="440" IsVisible="{Binding IsEmptyStateVisible}">
+                <StackPanel Spacing="8" HorizontalAlignment="Center">
+                    <TextBlock Text="{Binding EmptyTitle}" FontSize="19" FontWeight="SemiBold"
+                               HorizontalAlignment="Center" TextAlignment="Center" />
+                    <TextBlock Text="{Binding EmptyMessage}" Classes="secondary" TextWrapping="Wrap"
+                               HorizontalAlignment="Center" TextAlignment="Center" />
+                </StackPanel>
+            </Border>
+            <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,8,8" Padding="14,10"
+                    CornerRadius="10" Background="{DynamicResource ElevatedSurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                    IsVisible="{Binding IsToastVisible}">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinWidth="260">
+                    <TextBlock Text="{Binding ToastMessage}" TextWrapping="Wrap" />
+                    <Button Grid.Column="1" Classes="secondary" Content="×" Padding="7,2" MinHeight="28"
+                            Click="CloseToastClick" />
+                </Grid>
+            </Border>
         </Grid>
-
-        <Border Grid.Row="3" HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                Margin="0,0,8,8" Padding="14,10" CornerRadius="10"
-                Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                IsVisible="{Binding IsToastVisible}">
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" MinWidth="260">
-                <TextBlock Text="{Binding ToastMessage}" TextWrapping="Wrap"/>
-                <Button Grid.Column="1" Content="×" Click="CloseToastClick"/>
-            </Grid>
-        </Border>
     </Grid>
 </Window>

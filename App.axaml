@@ -2,9 +2,141 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="TaskManager.App"
              RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
-
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Default">
+                    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F3F5F8" />
+                    <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="ElevatedSurfaceBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="BorderBrush" Color="#DFE3EA" />
+                    <SolidColorBrush x:Key="PrimaryTextBrush" Color="#202632" />
+                    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#687386" />
+                    <SolidColorBrush x:Key="AccentBrush" Color="#5865D9" />
+                    <SolidColorBrush x:Key="AccentHoverBrush" Color="#4854C4" />
+                    <SolidColorBrush x:Key="AccentTextBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="InputBackgroundBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="HoverBrush" Color="#EEF1F7" />
+                    <SolidColorBrush x:Key="SubtleBrush" Color="#F7F8FA" />
+                    <SolidColorBrush x:Key="SuccessBrush" Color="#237A58" />
+                    <SolidColorBrush x:Key="SuccessSurfaceBrush" Color="#E7F4ED" />
+                    <SolidColorBrush x:Key="WarningBrush" Color="#94620A" />
+                    <SolidColorBrush x:Key="WarningSurfaceBrush" Color="#FBF1D9" />
+                    <SolidColorBrush x:Key="DangerBrush" Color="#B54748" />
+                    <SolidColorBrush x:Key="DangerSurfaceBrush" Color="#F9E9E9" />
+                    <SolidColorBrush x:Key="FocusBrush" Color="#8B92F1" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F3F5F8" />
+                    <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="ElevatedSurfaceBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="BorderBrush" Color="#DFE3EA" />
+                    <SolidColorBrush x:Key="PrimaryTextBrush" Color="#202632" />
+                    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#687386" />
+                    <SolidColorBrush x:Key="AccentBrush" Color="#5865D9" />
+                    <SolidColorBrush x:Key="AccentHoverBrush" Color="#4854C4" />
+                    <SolidColorBrush x:Key="AccentTextBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="InputBackgroundBrush" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="HoverBrush" Color="#EEF1F7" />
+                    <SolidColorBrush x:Key="SubtleBrush" Color="#F7F8FA" />
+                    <SolidColorBrush x:Key="SuccessBrush" Color="#237A58" />
+                    <SolidColorBrush x:Key="SuccessSurfaceBrush" Color="#E7F4ED" />
+                    <SolidColorBrush x:Key="WarningBrush" Color="#94620A" />
+                    <SolidColorBrush x:Key="WarningSurfaceBrush" Color="#FBF1D9" />
+                    <SolidColorBrush x:Key="DangerBrush" Color="#B54748" />
+                    <SolidColorBrush x:Key="DangerSurfaceBrush" Color="#F9E9E9" />
+                    <SolidColorBrush x:Key="FocusBrush" Color="#8B92F1" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#171A21" />
+                    <SolidColorBrush x:Key="SurfaceBrush" Color="#20242D" />
+                    <SolidColorBrush x:Key="ElevatedSurfaceBrush" Color="#282D38" />
+                    <SolidColorBrush x:Key="BorderBrush" Color="#373E4B" />
+                    <SolidColorBrush x:Key="PrimaryTextBrush" Color="#F0F2F7" />
+                    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#A7B0C0" />
+                    <SolidColorBrush x:Key="AccentBrush" Color="#9299FF" />
+                    <SolidColorBrush x:Key="AccentHoverBrush" Color="#A9AEFF" />
+                    <SolidColorBrush x:Key="AccentTextBrush" Color="#171A21" />
+                    <SolidColorBrush x:Key="InputBackgroundBrush" Color="#1C2028" />
+                    <SolidColorBrush x:Key="HoverBrush" Color="#303644" />
+                    <SolidColorBrush x:Key="SubtleBrush" Color="#242933" />
+                    <SolidColorBrush x:Key="SuccessBrush" Color="#79D0A3" />
+                    <SolidColorBrush x:Key="SuccessSurfaceBrush" Color="#263B34" />
+                    <SolidColorBrush x:Key="WarningBrush" Color="#E9BE68" />
+                    <SolidColorBrush x:Key="WarningSurfaceBrush" Color="#403722" />
+                    <SolidColorBrush x:Key="DangerBrush" Color="#F28D91" />
+                    <SolidColorBrush x:Key="DangerSurfaceBrush" Color="#432B31" />
+                    <SolidColorBrush x:Key="FocusBrush" Color="#A4AAFF" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
     <Application.Styles>
         <FluentTheme />
+        <Style Selector="Window">
+            <Setter Property="FontFamily" Value="Inter" />
+            <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+        </Style>
+        <Style Selector="TextBlock.secondary">
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+        </Style>
+        <Style Selector="TextBlock.section-label">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+        </Style>
+        <Style Selector="TextBlock.error">
+            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style Selector="Button">
+            <Setter Property="MinHeight" Value="36" />
+            <Setter Property="Padding" Value="13,8" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+        </Style>
+        <Style Selector="Button.secondary">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style Selector="Button.accent">
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.danger">
+            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+        </Style>
+        <Style Selector="Button.danger.action">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="TextBox, ComboBox, DatePicker, TimePicker, NumericUpDown">
+            <Setter Property="MinHeight" Value="38" />
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+        <Style Selector="Border.surface">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+        </Style>
     </Application.Styles>
 </Application>

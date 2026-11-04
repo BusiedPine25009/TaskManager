@@ -39,6 +39,14 @@ public sealed class RecycleBinService
         return entry.Task;
     }
 
+    public TaskItem Get(Guid id) => Find(id).Task;
+
+    public void RemoveRestored(Guid id)
+    {
+        _entries.Remove(Find(id));
+        Save();
+    }
+
     public void DeletePermanently(Guid id)
     {
         _entries.Remove(Find(id));

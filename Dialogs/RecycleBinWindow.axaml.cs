@@ -30,6 +30,7 @@ public partial class RecycleBinWindow : Window, INotifyPropertyChanged
     public bool HasEntries => !IsEmpty;
     public string CountText => $"Удалённых задач: {Entries.Count}";
     public new event PropertyChangedEventHandler? PropertyChanged;
+    public RecycleBinAction? LastAction { get; private set; }
 
     private void Refresh()
     {
@@ -55,8 +56,16 @@ public partial class RecycleBinWindow : Window, INotifyPropertyChanged
         bool confirmed = await new ConfirmationDialog("Вы действительно хотите удалить эту задачу навсегда?").ShowDialog<bool>(this);
         if (!confirmed)
             return;
-        _service.DeletePermanently(item.Id);
-        Close(new RecycleBinResult(RecycleBinAction.DeletePermanently, item.Id));
+        try
+        {
+            _service.DeletePermanently(item.Id);
+            LastAction = RecycleBinAction.DeletePermanently;
+            Refresh();
+        }
+        catch (System.Exception ex)
+        {
+            await new MessageDialog("Не удалось удалить задачу", ex.Message).ShowDialog(this);
+        }
     }
 
     private async void ClearClick(object? sender, RoutedEventArgs e)
@@ -64,9 +73,22 @@ public partial class RecycleBinWindow : Window, INotifyPropertyChanged
         bool confirmed = await new ConfirmationDialog("Вы действительно хотите очистить корзину?").ShowDialog<bool>(this);
         if (!confirmed)
             return;
-        _service.Clear();
-        Close(new RecycleBinResult(RecycleBinAction.Clear, System.Guid.Empty));
+        try
+        {
+            _service.Clear();
+            LastAction = RecycleBinAction.Clear;
+            Refresh();
+        }
+        catch (System.Exception ex)
+        {
+            await new MessageDialog("Не удалось очистить корзину", ex.Message).ShowDialog(this);
+        }
     }
+
+    private void CloseClick(object? sender, RoutedEventArgs e)
+        => Close(LastAction.HasValue
+            ? new RecycleBinResult(LastAction.Value, System.Guid.Empty)
+            : null);
 
     private void SetField<T>(ref T field, T value, [CallerMemberName] string? name = null)
     {

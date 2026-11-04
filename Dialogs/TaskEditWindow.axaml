@@ -1,53 +1,67 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="TaskManager.Dialogs.TaskEditWindow"
-        Width="520"
-        MinHeight="620"
-        WindowStartupLocation="CenterOwner"
-        Title="Задача">
-    <ScrollViewer>
-        <StackPanel Margin="24" Spacing="12">
-            <TextBlock x:Name="HeaderText" FontSize="24" FontWeight="SemiBold"/>
+        Width="560" Height="720" MinWidth="480" MinHeight="500"
+        WindowStartupLocation="CenterOwner" Title="Задача">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="26" Spacing="12">
+            <TextBlock x:Name="HeaderText" FontSize="25" FontWeight="SemiBold" />
+            <TextBlock Text="Заполните детали и срок выполнения" Classes="secondary" Margin="0,0,0,6" />
 
-            <TextBlock Text="Название"/>
-            <TextBox x:Name="TitleBox" MaxLength="100"/>
-            <TextBlock x:Name="TitleError" Classes="error"/>
+            <Border Classes="surface" Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="ОСНОВНОЕ" Classes="section-label" />
+                    <TextBlock Text="Название" FontWeight="SemiBold" />
+                    <TextBox x:Name="TitleBox" MaxLength="100" />
+                    <TextBlock x:Name="TitleError" Classes="error" />
+                    <TextBlock Text="Описание" FontWeight="SemiBold" Margin="0,5,0,0" />
+                    <TextBox x:Name="DescriptionBox" MinHeight="82" TextWrapping="Wrap" AcceptsReturn="True" />
+                </StackPanel>
+            </Border>
 
-            <TextBlock Text="Описание"/>
-            <TextBox x:Name="DescriptionBox" MinHeight="80" TextWrapping="Wrap" AcceptsReturn="True"/>
+            <Border Classes="surface" Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="СРОК И СОСТОЯНИЕ" Classes="section-label" />
+                    <TextBlock Text="Дата и время выполнения" FontWeight="SemiBold" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <DatePicker x:Name="DueDatePicker" />
+                        <TimePicker Grid.Column="1" x:Name="DueTimePicker" ClockIdentifier="24HourClock" />
+                    </Grid>
+                    <TextBlock x:Name="DueDateError" Classes="error" />
+                    <TextBlock x:Name="DueTimeError" Classes="error" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,4,0,0">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Приоритет" FontWeight="SemiBold" />
+                            <ComboBox x:Name="PriorityBox" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="6">
+                            <TextBlock Text="Статус" FontWeight="SemiBold" />
+                            <ComboBox x:Name="StateBox" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
 
-            <TextBlock Text="Срок выполнения"/>
-            <DatePicker x:Name="DueDatePicker"/>
-            <TextBlock x:Name="DueDateError" Classes="error"/>
+            <Border Classes="surface" Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="ТИП ЗАДАЧИ" Classes="section-label" />
+                    <ComboBox x:Name="TypeBox" />
+                    <StackPanel x:Name="RecurringPanel" Spacing="6" IsVisible="False" Margin="0,5,0,0">
+                        <TextBlock Text="Повторять каждые N дней" FontWeight="SemiBold" />
+                        <NumericUpDown x:Name="RepeatBox" Minimum="1" Maximum="365" Increment="1" />
+                        <TextBlock x:Name="RepeatError" Classes="error" />
+                    </StackPanel>
+                    <StackPanel x:Name="ProjectPanel" Spacing="6" IsVisible="False" Margin="0,5,0,0">
+                        <TextBlock Text="Название проекта" FontWeight="SemiBold" />
+                        <TextBox x:Name="ProjectBox" />
+                        <TextBlock x:Name="ProjectError" Classes="error" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
-            <TextBlock Text="Время выполнения"/>
-            <TimePicker x:Name="DueTimePicker" ClockIdentifier="24HourClock"/>
-            <TextBlock x:Name="DueTimeError" Classes="error"/>
-
-            <TextBlock Text="Приоритет"/>
-            <ComboBox x:Name="PriorityBox"/>
-
-            <TextBlock Text="Статус"/>
-            <ComboBox x:Name="StateBox"/>
-
-            <TextBlock Text="Вид задачи"/>
-            <ComboBox x:Name="TypeBox"/>
-
-            <StackPanel x:Name="RecurringPanel" Spacing="6" IsVisible="False">
-                <TextBlock Text="Повторять каждые N дней"/>
-                <NumericUpDown x:Name="RepeatBox" Minimum="1" Maximum="365" Increment="1"/>
-                <TextBlock x:Name="RepeatError" Classes="error"/>
-            </StackPanel>
-
-            <StackPanel x:Name="ProjectPanel" Spacing="6" IsVisible="False">
-                <TextBlock Text="Название проекта"/>
-                <TextBox x:Name="ProjectBox"/>
-                <TextBlock x:Name="ProjectError" Classes="error"/>
-            </StackPanel>
-
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,12,0,0">
-                <Button Content="Отмена" Click="CancelClick"/>
-                <Button Content="Сохранить" Classes="accent" Click="SaveClick"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="9" Margin="0,5,0,0">
+                <Button Classes="secondary" Content="Отмена" Click="CancelClick" />
+                <Button Content="Сохранить задачу" Classes="accent" Click="SaveClick" />
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

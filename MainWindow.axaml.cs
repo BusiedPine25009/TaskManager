@@ -166,8 +166,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             try
             {
-                TaskItem task = _recycleBin.Restore(result.TaskId);
+                TaskItem task = _recycleBin.Get(result.TaskId);
                 _taskService.Restore(task);
+                _recycleBin.RemoveRestored(result.TaskId);
                 Refresh();
                 ShowToast("Задача восстановлена");
             }

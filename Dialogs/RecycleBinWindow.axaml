@@ -4,53 +4,66 @@
         xmlns:vm="using:TaskManager.ViewModels"
         x:DataType="local:RecycleBinWindow"
         x:Class="TaskManager.Dialogs.RecycleBinWindow"
-        Width="780"
-        Height="560"
-        MinWidth="620"
-        MinHeight="400"
-        WindowStartupLocation="CenterOwner"
-        Title="Корзина">
-    <Grid RowDefinitions="Auto,*" Margin="24">
-        <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,18">
-            <StackPanel Spacing="4">
-                <TextBlock Text="Корзина" FontSize="26" FontWeight="SemiBold"/>
-                <TextBlock Text="{Binding CountText}" Opacity="0.7"/>
+        Width="820" Height="600" MinWidth="620" MinHeight="420"
+        WindowStartupLocation="CenterOwner" Title="Корзина">
+    <Grid RowDefinitions="Auto,*" Margin="26">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14" Margin="0,0,0,18">
+            <StackPanel Spacing="4" VerticalAlignment="Center">
+                <TextBlock Text="Корзина" FontSize="25" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding CountText}" Classes="secondary" FontSize="13" />
             </StackPanel>
-            <Button Grid.Column="1" Content="Очистить корзину" Classes="accent"
-                    Click="ClearClick" IsEnabled="{Binding HasEntries}"/>
+            <WrapPanel Grid.Column="1" Orientation="Horizontal" ItemSpacing="8" VerticalAlignment="Center">
+                <Button Content="Очистить корзину" Classes="secondary danger"
+                        Click="ClearClick" IsEnabled="{Binding HasEntries}" />
+                <Button Content="Закрыть" Classes="secondary" Click="CloseClick" />
+            </WrapPanel>
         </Grid>
         <Grid Grid.Row="1">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding Entries}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:DeletedTaskViewModel">
-                            <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                                    CornerRadius="10" Padding="12" Margin="0,0,0,8">
-                                <Grid ColumnDefinitions="5,*,Auto" ColumnSpacing="12">
-                                    <Border Background="{Binding PriorityBrush}" CornerRadius="3"/>
-                                    <StackPanel Grid.Column="1" Spacing="5">
-                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold"
-                                                   TextWrapping="Wrap"/>
-                                        <WrapPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding DueDateText}" Margin="0,0,14,0"/>
-                                            <TextBlock Text="{Binding PriorityText}" Margin="0,0,14,0"/>
-                                            <TextBlock Text="{Binding TypeText}" Margin="0,0,14,0"/>
-                                            <TextBlock Text="{Binding DeletedAtText}" Opacity="0.7"/>
+                            <Border Classes="surface" Padding="14" Margin="0,0,0,10">
+                                <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="13">
+                                    <Border Background="{Binding PriorityBrush}" CornerRadius="2" />
+                                    <StackPanel Grid.Column="1" Spacing="8" MinWidth="0">
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="15"
+                                                   TextWrapping="Wrap" />
+                                        <WrapPanel Orientation="Horizontal" ItemSpacing="7" LineSpacing="6">
+                                            <Border Background="{DynamicResource SubtleBrush}" CornerRadius="5" Padding="8,4">
+                                                <TextBlock Text="{Binding DueDateText}" FontSize="11" />
+                                            </Border>
+                                            <Border Background="{DynamicResource SubtleBrush}" CornerRadius="5" Padding="8,4">
+                                                <TextBlock Text="{Binding PriorityText}" FontSize="11" />
+                                            </Border>
+                                            <Border Background="{DynamicResource SubtleBrush}" CornerRadius="5" Padding="8,4">
+                                                <TextBlock Text="{Binding TypeText}" FontSize="11" />
+                                            </Border>
+                                            <TextBlock Text="{Binding DeletedAtText}" Classes="secondary"
+                                                       FontSize="11" VerticalAlignment="Center" />
                                         </WrapPanel>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
-                                        <Button Content="Восстановить" Tag="{Binding}" Click="RestoreClick"/>
-                                        <Button Content="Удалить навсегда" Tag="{Binding}" Click="DeleteClick"/>
-                                    </StackPanel>
+                                    <WrapPanel Grid.Column="2" Orientation="Horizontal" ItemSpacing="6"
+                                               VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Button Content="Восстановить" Classes="accent" Tag="{Binding}" Click="RestoreClick" />
+                                        <Button Classes="secondary danger" Content="Удалить навсегда"
+                                                Tag="{Binding}" Click="DeleteClick" />
+                                    </WrapPanel>
                                 </Grid>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
-            <TextBlock Text="Корзина пуста" FontSize="20" Opacity="0.7"
-                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                       IsVisible="{Binding IsEmpty}"/>
+            <Border Classes="surface" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="28"
+                    IsVisible="{Binding IsEmpty}">
+                <StackPanel Spacing="6" HorizontalAlignment="Center">
+                    <TextBlock Text="Здесь пока пусто" FontSize="18" FontWeight="SemiBold"
+                               HorizontalAlignment="Center" />
+                    <TextBlock Text="Удалённые задачи появятся здесь" Classes="secondary"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
         </Grid>
     </Grid>
 </Window>
