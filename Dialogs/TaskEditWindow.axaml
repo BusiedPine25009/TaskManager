@@ -3,8 +3,9 @@
         x:Class="TaskManager.Dialogs.TaskEditWindow"
         Width="560" Height="720" MinWidth="480" MinHeight="500"
         WindowStartupLocation="CenterOwner" Title="Задача">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="26" Spacing="12">
+    <Grid RowDefinitions="*,Auto">
+    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="26,26,26,18" Spacing="12">
             <TextBlock x:Name="HeaderText" FontSize="25" FontWeight="SemiBold" />
             <TextBlock Text="Заполните детали и срок выполнения" Classes="secondary" Margin="0,0,0,6" />
 
@@ -22,12 +23,11 @@
             <Border Classes="surface" Padding="16">
                 <StackPanel Spacing="8">
                     <TextBlock Text="СРОК И СОСТОЯНИЕ" Classes="section-label" />
-                    <TextBlock Text="Дата и время выполнения" FontWeight="SemiBold" />
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                        <DatePicker x:Name="DueDatePicker" />
-                        <TimePicker Grid.Column="1" x:Name="DueTimePicker" ClockIdentifier="24HourClock" />
-                    </Grid>
+                    <TextBlock Text="Дата выполнения" FontWeight="SemiBold" />
+                    <DatePicker x:Name="DueDatePicker" HorizontalAlignment="Stretch" />
                     <TextBlock x:Name="DueDateError" Classes="error" />
+                    <TextBlock Text="Время выполнения" FontWeight="SemiBold" Margin="0,4,0,0" />
+                    <TimePicker x:Name="DueTimePicker" ClockIdentifier="24HourClock" HorizontalAlignment="Stretch" />
                     <TextBlock x:Name="DueTimeError" Classes="error" />
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,4,0,0">
                         <StackPanel Spacing="6">
@@ -59,10 +59,15 @@
                 </StackPanel>
             </Border>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="9" Margin="0,5,0,0">
-                <Button Classes="secondary" Content="Отмена" Click="CancelClick" />
-                <Button Content="Сохранить задачу" Classes="accent" Click="SaveClick" />
-            </StackPanel>
         </StackPanel>
     </ScrollViewer>
+
+    <!-- Панель кнопок всегда видна, даже если форма длиннее окна -->
+    <Border Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="26,14">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="9">
+            <Button Classes="secondary" Content="Отмена" IsCancel="True" Click="CancelClick" />
+            <Button Content="Сохранить задачу" Classes="accent" IsDefault="True" Click="SaveClick" />
+        </StackPanel>
+    </Border>
+    </Grid>
 </Window>

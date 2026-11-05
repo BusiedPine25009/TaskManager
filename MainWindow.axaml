@@ -39,8 +39,31 @@
             </StackPanel>
             <WrapPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center"
                        Orientation="Horizontal" ItemSpacing="8">
-                <Button Classes="secondary" Content="{Binding ThemeButtonText}" ToolTip.Tip="{Binding ThemeTooltip}"
-                        Click="ThemeClick" Width="40" Padding="0" />
+                <Button Classes="secondary" ToolTip.Tip="{Binding ThemeTooltip}" Click="ThemeClick" Padding="12,0">
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Panel Width="18" Height="18" VerticalAlignment="Center">
+                            <!-- Системная тема: значок монитора -->
+                            <Viewbox IsVisible="{Binding IsSystemTheme}">
+                                <Canvas Width="24" Height="24">
+                                    <Path Classes="icon" Data="M4,3 H20 A2,2 0 0 1 22,5 V15 A2,2 0 0 1 20,17 H4 A2,2 0 0 1 2,15 V5 A2,2 0 0 1 4,3 Z M8,21 H16 M12,17 V21" />
+                                </Canvas>
+                            </Viewbox>
+                            <!-- Светлая тема: солнце -->
+                            <Viewbox IsVisible="{Binding IsLightTheme}">
+                                <Canvas Width="24" Height="24">
+                                    <Path Classes="icon" Data="M17,12 A5,5 0 1 1 7,12 A5,5 0 1 1 17,12 Z M12,1 V3 M12,21 V23 M4.22,4.22 L5.64,5.64 M18.36,18.36 L19.78,19.78 M1,12 H3 M21,12 H23 M4.22,19.78 L5.64,18.36 M18.36,5.64 L19.78,4.22" />
+                                </Canvas>
+                            </Viewbox>
+                            <!-- Тёмная тема: луна -->
+                            <Viewbox IsVisible="{Binding IsDarkTheme}">
+                                <Canvas Width="24" Height="24">
+                                    <Path Classes="icon" Data="M21,12.79 A9,9 0 1 1 11.21,3 A7,7 0 0 0 21,12.79 Z" />
+                                </Canvas>
+                            </Viewbox>
+                        </Panel>
+                        <TextBlock Text="{Binding ThemeLabel}" FontSize="13" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
                 <Button Classes="secondary" Content="{Binding BinButtonText}" ToolTip.Tip="Открыть корзину"
                         Click="OpenBinClick" />
                 <Button Content="＋  Добавить задачу" Classes="accent" Click="AddTaskClick" />
@@ -71,8 +94,8 @@
             <WrapPanel Orientation="Horizontal" VerticalAlignment="Center" ItemSpacing="8" LineSpacing="8">
                 <TextBox x:Name="SearchBox" PlaceholderText="Поиск по задачам" TextChanged="FilterChanged"
                          Width="260" MinWidth="180" />
-                <ComboBox x:Name="StateFilter" Width="140" SelectionChanged="FilterChanged" />
-                <ComboBox x:Name="PriorityFilter" Width="140" SelectionChanged="FilterChanged" />
+                <ComboBox x:Name="StateFilter" Width="170" SelectionChanged="FilterChanged" />
+                <ComboBox x:Name="PriorityFilter" Width="180" SelectionChanged="FilterChanged" />
                 <Button Classes="secondary" Content="Сбросить" ToolTip.Tip="Сбросить поиск и фильтры"
                         Click="ResetFiltersClick" />
             </WrapPanel>

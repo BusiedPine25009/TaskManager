@@ -87,17 +87,21 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     public string EmptyMessage { get => _emptyMessage; private set => SetField(ref _emptyMessage, value); }
     public bool IsToastVisible { get => _isToastVisible; private set => SetField(ref _isToastVisible, value); }
     public string ToastMessage { get => _toastMessage; private set => SetField(ref _toastMessage, value); }
-    public string ThemeButtonText => CurrentThemeName() switch
+    // Какая тема выбрана сейчас: переключатель идёт по кругу «системная → светлая → тёмная»
+    public bool IsSystemTheme => CurrentThemeName() == "Default";
+    public bool IsLightTheme => CurrentThemeName() == "Light";
+    public bool IsDarkTheme => CurrentThemeName() == "Dark";
+    public string ThemeLabel => CurrentThemeName() switch
     {
-        "Light" => "☀",
-        "Dark" => "☾",
-        _ => "◐"
+        "Light" => "Светлая",
+        "Dark" => "Тёмная",
+        _ => "Авто"
     };
     public string ThemeTooltip => CurrentThemeName() switch
     {
-        "Light" => "Светлая тема",
-        "Dark" => "Тёмная тема",
-        _ => "Системная тема"
+        "Light" => "Светлая тема. Нажмите, чтобы включить тёмную",
+        "Dark" => "Тёмная тема. Нажмите, чтобы вернуть системную",
+        _ => "Тема следует настройкам системы. Нажмите, чтобы включить светлую"
     };
 
     public new event PropertyChangedEventHandler? PropertyChanged;
@@ -201,7 +205,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (Application.Current != null)
             Application.Current.RequestedThemeVariant = next;
         _themePreferences.Save(next == ThemeVariant.Light ? "Light" : next == ThemeVariant.Dark ? "Dark" : "Default");
-        Raise(nameof(ThemeButtonText));
+        Raise(nameof(IsSystemTheme));
+        Raise(nameof(IsLightTheme));
+        Raise(nameof(IsDarkTheme));
+        Raise(nameof(ThemeLabel));
         Raise(nameof(ThemeTooltip));
     }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -19,8 +20,11 @@ public partial class TaskEditWindow : Window
         InitializeComponent();
         _original = task;
 
-        PriorityBox.ItemsSource = Enum.GetValues<Priority>();
-        StateBox.ItemsSource = Enum.GetValues<TaskState>();
+        // В списках показываем русские названия, а в Value храним само значение перечисления
+        var priorities = Enum.GetValues<Priority>().Select(p => new Option<Priority>(p.ToRussian(), p)).ToList();
+        var states = Enum.GetValues<TaskState>().Select(s => new Option<TaskState>(s.ToRussian(), s)).ToList();
+        PriorityBox.ItemsSource = priorities;
+        StateBox.ItemsSource = states;
         TypeBox.ItemsSource = new[] { "Обычная", "Повторяющаяся", "Проектная" };
         TypeBox.SelectionChanged += TypeChanged;
 
@@ -31,8 +35,8 @@ public partial class TaskEditWindow : Window
             ? DateTimeOffset.Now.Date
             : new DateTimeOffset(task.DueDate.Date);
         DueTimePicker.SelectedTime = task?.DueDate.TimeOfDay ?? new TimeSpan(23, 59, 0);
-        PriorityBox.SelectedItem = task?.Priority ?? Priority.Medium;
-        StateBox.SelectedItem = task?.State ?? TaskState.New;
+        PriorityBox.SelectedItem = priorities.First(o => o.Value == (task?.Priority ?? Priority.Medium));
+        StateBox.SelectedItem = states.First(o => o.Value == (task?.State ?? TaskState.New));
         TypeBox.SelectedIndex = task switch
         {
             RecurringTask => 1,
@@ -63,10 +67,11 @@ public partial class TaskEditWindow : Window
         DueTimeError.Text = string.Empty;
         RepeatError.Text = string.Empty;
         ProjectError.Text = string.Empty;
-        TitleBox.Background = Brushes.Transparent;
-        DueDatePicker.Background = Brushes.Transparent;
-        RepeatBox.Background = Brushes.Transparent;
-        ProjectBox.Background = Brushes.Transparent;
+        TitleBox.Classes.Remove("invalid");
+        DueDatePicker.Classes.Remove("invalid");
+        DueTimePicker.Classes.Remove("invalid");
+        RepeatBox.Classes.Remove("invalid");
+        ProjectBox.Classes.Remove("invalid");
     }
 
     private void SaveClick(object? sender, RoutedEventArgs e)
@@ -77,32 +82,32 @@ public partial class TaskEditWindow : Window
         if (string.IsNullOrWhiteSpace(TitleBox.Text))
         {
             TitleError.Text = "Введите название задачи.";
-            TitleBox.Background = Brushes.MistyRose;
+            TitleBox.Classes.Add("invalid");
             isValid = false;
         }
         else if (TitleBox.Text.Trim().Length > TaskItem.MaxTitleLength)
         {
             TitleError.Text = $"Название не должно превышать {TaskItem.MaxTitleLength} символов.";
-            TitleBox.Background = Brushes.MistyRose;
+            TitleBox.Classes.Add("invalid");
             isValid = false;
         }
 
         if (!DueDatePicker.SelectedDate.HasValue)
         {
             DueDateError.Text = "Укажите срок выполнения.";
-            DueDatePicker.Background = Brushes.MistyRose;
+            DueDatePicker.Classes.Add("invalid");
             isValid = false;
         }
         if (!DueTimePicker.SelectedTime.HasValue)
         {
             DueTimeError.Text = "Укажите время выполнения.";
-            DueTimePicker.Background = Brushes.MistyRose;
+            DueTimePicker.Classes.Add("invalid");
             isValid = false;
         }
         else if (_original == null && DueDatePicker.SelectedDate!.Value.Date.Add(DueTimePicker.SelectedTime ?? TimeSpan.Zero) < DateTime.Now)
         {
             DueDateError.Text = "Срок новой задачи не может быть в прошлом.";
-            DueDatePicker.Background = Brushes.MistyRose;
+            DueDatePicker.Classes.Add("invalid");
             isValid = false;
         }
 
@@ -110,14 +115,14 @@ public partial class TaskEditWindow : Window
         if (TypeBox.SelectedIndex == 1 && (repeatEveryDays < 1 || repeatEveryDays > 365))
         {
             RepeatError.Text = "Интервал должен быть от 1 до 365 дней.";
-            RepeatBox.Background = Brushes.MistyRose;
+            RepeatBox.Classes.Add("invalid");
             isValid = false;
         }
 
         if (TypeBox.SelectedIndex == 2 && string.IsNullOrWhiteSpace(ProjectBox.Text))
         {
             ProjectError.Text = "Введите название проекта.";
-            ProjectBox.Background = Brushes.MistyRose;
+            ProjectBox.Classes.Add("invalid");
             isValid = false;
         }
 
@@ -135,8 +140,8 @@ public partial class TaskEditWindow : Window
                 Title = TitleBox.Text!.Trim(),
                 Description = DescriptionBox.Text ?? string.Empty,
                 DueDate = dueDate,
-                Priority = (Priority)PriorityBox.SelectedItem!,
-                State = (TaskState)StateBox.SelectedItem!,
+                Priority = SelectedPriority,
+                State = SelectedState,
                 RepeatEveryDays = repeatEveryDays
             },
             2 => new ProjectTask
@@ -146,8 +151,8 @@ public partial class TaskEditWindow : Window
                 Title = TitleBox.Text!.Trim(),
                 Description = DescriptionBox.Text ?? string.Empty,
                 DueDate = dueDate,
-                Priority = (Priority)PriorityBox.SelectedItem!,
-                State = (TaskState)StateBox.SelectedItem!,
+                Priority = SelectedPriority,
+                State = SelectedState,
                 ProjectName = ProjectBox.Text!.Trim()
             },
             _ => new TaskItem
@@ -157,8 +162,8 @@ public partial class TaskEditWindow : Window
                 Title = TitleBox.Text!.Trim(),
                 Description = DescriptionBox.Text ?? string.Empty,
                 DueDate = dueDate,
-                Priority = (Priority)PriorityBox.SelectedItem!,
-                State = (TaskState)StateBox.SelectedItem!
+                Priority = SelectedPriority,
+                State = SelectedState
             }
         };
 
@@ -166,4 +171,14 @@ public partial class TaskEditWindow : Window
     }
 
     private void CancelClick(object? sender, RoutedEventArgs e) => Close(null);
+
+    // Выбранный в списке приоритет и статус
+    private Priority SelectedPriority => ((Option<Priority>)PriorityBox.SelectedItem!).Value;
+    private TaskState SelectedState => ((Option<TaskState>)StateBox.SelectedItem!).Value;
+
+    // Пункт выпадающего списка: показывает русскую подпись, хранит значение перечисления
+    private sealed record Option<T>(string Label, T Value)
+    {
+        public override string ToString() => Label;
+    }
 }
