@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using TaskManager.Models;
+using TaskManager.Services;
 
 namespace TaskManager.Dialogs;
 
@@ -21,14 +22,17 @@ public partial class TaskEditWindow : Window
         _original = task;
 
         // В списках показываем русские названия, а в Value храним само значение перечисления
-        var priorities = Enum.GetValues<Priority>().Select(p => new Option<Priority>(p.ToRussian(), p)).ToList();
-        var states = Enum.GetValues<TaskState>().Select(s => new Option<TaskState>(s.ToRussian(), s)).ToList();
+        var priorities = Enum.GetValues<Priority>().Select(p => new Option<Priority>(p.ToDisplayName(), p)).ToList();
+        var states = Enum.GetValues<TaskState>().Select(s => new Option<TaskState>(s.ToDisplayName(), s)).ToList();
         PriorityBox.ItemsSource = priorities;
         StateBox.ItemsSource = states;
-        TypeBox.ItemsSource = new[] { "Обычная", "Повторяющаяся", "Проектная" };
+        TypeBox.ItemsSource = new[]
+        {
+            Loc.T("enum.type.basic"), Loc.T("enum.type.recurring"), Loc.T("enum.type.project")
+        };
         TypeBox.SelectionChanged += TypeChanged;
 
-        HeaderText.Text = task == null ? "Новая задача" : "Редактирование задачи";
+        HeaderText.Text = task == null ? Loc.T("edit.newTitle") : Loc.T("edit.editTitle");
         TitleBox.Text = task?.Title ?? string.Empty;
         DescriptionBox.Text = task?.Description ?? string.Empty;
         DueDatePicker.SelectedDate = task == null
@@ -81,32 +85,32 @@ public partial class TaskEditWindow : Window
 
         if (string.IsNullOrWhiteSpace(TitleBox.Text))
         {
-            TitleError.Text = "Введите название задачи.";
+            TitleError.Text = Loc.T("edit.err.title");
             TitleBox.Classes.Add("invalid");
             isValid = false;
         }
         else if (TitleBox.Text.Trim().Length > TaskItem.MaxTitleLength)
         {
-            TitleError.Text = $"Название не должно превышать {TaskItem.MaxTitleLength} символов.";
+            TitleError.Text = Loc.T("edit.err.titleLong", TaskItem.MaxTitleLength);
             TitleBox.Classes.Add("invalid");
             isValid = false;
         }
 
         if (!DueDatePicker.SelectedDate.HasValue)
         {
-            DueDateError.Text = "Укажите срок выполнения.";
+            DueDateError.Text = Loc.T("edit.err.date");
             DueDatePicker.Classes.Add("invalid");
             isValid = false;
         }
         if (!DueTimePicker.SelectedTime.HasValue)
         {
-            DueTimeError.Text = "Укажите время выполнения.";
+            DueTimeError.Text = Loc.T("edit.err.time");
             DueTimePicker.Classes.Add("invalid");
             isValid = false;
         }
         else if (_original == null && DueDatePicker.SelectedDate!.Value.Date.Add(DueTimePicker.SelectedTime ?? TimeSpan.Zero) < DateTime.Now)
         {
-            DueDateError.Text = "Срок новой задачи не может быть в прошлом.";
+            DueDateError.Text = Loc.T("edit.err.past");
             DueDatePicker.Classes.Add("invalid");
             isValid = false;
         }
@@ -114,14 +118,14 @@ public partial class TaskEditWindow : Window
         int repeatEveryDays = (int)(RepeatBox.Value ?? 0);
         if (TypeBox.SelectedIndex == 1 && (repeatEveryDays < 1 || repeatEveryDays > 365))
         {
-            RepeatError.Text = "Интервал должен быть от 1 до 365 дней.";
+            RepeatError.Text = Loc.T("edit.err.repeat");
             RepeatBox.Classes.Add("invalid");
             isValid = false;
         }
 
         if (TypeBox.SelectedIndex == 2 && string.IsNullOrWhiteSpace(ProjectBox.Text))
         {
-            ProjectError.Text = "Введите название проекта.";
+            ProjectError.Text = Loc.T("edit.err.project");
             ProjectBox.Classes.Add("invalid");
             isValid = false;
         }

@@ -61,7 +61,7 @@ public sealed class RecycleBinService
 
     private DeletedTask Find(Guid id)
         => _entries.FirstOrDefault(e => e.Task.Id == id)
-           ?? throw new KeyNotFoundException("Задача не найдена в корзине.");
+           ?? throw new KeyNotFoundException(Loc.T("err.bin.notFound"));
 
     private void Save() => _storage.Save(_entries);
 }

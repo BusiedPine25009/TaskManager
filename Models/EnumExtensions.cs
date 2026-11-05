@@ -1,33 +1,35 @@
+using TaskManager.Services;
+
 namespace TaskManager.Models;
 
 /// <summary>
-/// Методы-расширения для вывода перечислений на русском языке.
-/// Нужны, чтобы в интерфейсе пользователь видел «Высокий», а не «High».
+/// Методы-расширения для получения локализованных подписей перечислений.
+/// Сами значения enum остаются прежними и продолжают сохраняться в данных без изменений.
 /// </summary>
 public static class EnumExtensions
 {
-    /// <summary>Возвращает русское название приоритета.</summary>
+    /// <summary>Возвращает локализованное название приоритета.</summary>
     /// <param name="priority">Приоритет задачи.</param>
-    public static string ToRussian(this Priority priority)
+    public static string ToDisplayName(this Priority priority)
     {
         return priority switch
         {
-            Priority.Low => "Низкий",
-            Priority.Medium => "Средний",
-            Priority.High => "Высокий",
+            Priority.Low => Loc.T("enum.priority.low"),
+            Priority.Medium => Loc.T("enum.priority.medium"),
+            Priority.High => Loc.T("enum.priority.high"),
             _ => priority.ToString()
         };
     }
 
-    /// <summary>Возвращает русское название статуса.</summary>
+    /// <summary>Возвращает локализованное название статуса.</summary>
     /// <param name="state">Статус задачи.</param>
-    public static string ToRussian(this TaskState state)
+    public static string ToDisplayName(this TaskState state)
     {
         return state switch
         {
-            TaskState.New => "Новая",
-            TaskState.InProgress => "В работе",
-            TaskState.Done => "Выполнена",
+            TaskState.New => Loc.T("enum.state.new"),
+            TaskState.InProgress => Loc.T("enum.state.inProgress"),
+            TaskState.Done => Loc.T("enum.state.done"),
             _ => state.ToString()
         };
     }

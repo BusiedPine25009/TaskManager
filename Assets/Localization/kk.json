@@ -43,6 +43,7 @@
   "card.overdueBy": "{0} кешікті",
   "card.repeatEvery": "{0} күн сайын қайталанады",
   "card.project": "Жоба: {0}",
+  "project.defaultName": "Жобасыз",
   "card.edit": "Өзгерту",
   "card.editTooltip": "Тапсырманы өзгерту",
   "card.delete": "Жою",

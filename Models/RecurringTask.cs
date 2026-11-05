@@ -1,4 +1,5 @@
 using System;
+using TaskManager.Services;
 
 namespace TaskManager.Models;
 
@@ -20,14 +21,14 @@ public class RecurringTask : TaskItem
         set
         {
             if (value < 1 || value > 365)
-                throw new ArgumentException("Интервал повторения должен быть от 1 до 365 дней.");
+                throw new ArgumentException(Loc.T("err.repeat.range"));
 
             _repeatEveryDays = value;
         }
     }
 
     /// <summary>Название вида задачи (переопределение базового метода).</summary>
-    public override string GetTypeName() => "Повторяющаяся";
+    public override string GetTypeName() => Loc.T("enum.type.recurring");
 
     /// <summary>
     /// Вместо закрытия задачи переносит срок вперёд на RepeatEveryDays дней
@@ -48,6 +49,6 @@ public class RecurringTask : TaskItem
     /// <summary>Дополняет базовое описание информацией о повторе.</summary>
     public override string GetDetails()
     {
-        return $"{base.GetDetails()} | повтор: каждые {RepeatEveryDays} дн.";
+        return $"{base.GetDetails()} | {Loc.T("card.repeatEvery", RepeatEveryDays)}";
     }
 }

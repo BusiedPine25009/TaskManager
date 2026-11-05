@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using TaskManager.Services;
 
 namespace TaskManager.Models;
 
@@ -13,7 +14,7 @@ public sealed class LegacyDueDateConverter : JsonConverter<DateTime>
 {
     public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        string value = reader.GetString() ?? throw new JsonException("Срок выполнения не указан.");
+        string value = reader.GetString() ?? throw new JsonException(Loc.T("err.due.missing"));
         if (DateTime.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture,
                 DateTimeStyles.None, out DateTime dateOnly))
             return dateOnly.Date.AddHours(23).AddMinutes(59);

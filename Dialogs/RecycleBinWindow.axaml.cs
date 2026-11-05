@@ -22,18 +22,22 @@ public partial class RecycleBinWindow : Window, INotifyPropertyChanged
         InitializeComponent();
         _service = service;
         DataContext = this;
+        Loc.Instance.LanguageChanged += LanguageChanged;
+        Closed += (_, _) => Loc.Instance.LanguageChanged -= LanguageChanged;
         Refresh();
     }
 
     public ObservableCollection<DeletedTaskViewModel> Entries { get; } = new();
     public bool IsEmpty { get => _isEmpty; private set => SetField(ref _isEmpty, value); }
     public bool HasEntries => !IsEmpty;
-    public string CountText => $"Удалённых задач: {Entries.Count}";
+    public string CountText => Loc.T("bin.count", Entries.Count);
     public new event PropertyChangedEventHandler? PropertyChanged;
     public RecycleBinAction? LastAction { get; private set; }
 
     private void Refresh()
     {
+        foreach (DeletedTaskViewModel entry in Entries)
+            entry.Dispose();
         Entries.Clear();
         foreach (DeletedTask entry in _service.Entries)
             Entries.Add(new DeletedTaskViewModel(entry));
@@ -41,6 +45,9 @@ public partial class RecycleBinWindow : Window, INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasEntries)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CountText)));
     }
+
+    /// <summary>Пересобирает счётчик и вычисляемые подписи корзины при смене языка.</summary>
+    private void LanguageChanged(object? sender, System.EventArgs e) => Refresh();
 
     private void RestoreClick(object? sender, RoutedEventArgs e)
     {
@@ -53,7 +60,7 @@ public partial class RecycleBinWindow : Window, INotifyPropertyChanged
     {
         if ((sender as Button)?.Tag is not DeletedTaskViewModel item)
             return;
-        bool confirmed = await new ConfirmationDialog("Вы действительно хотите удалить эту задачу навсегда?").ShowDialog<bool>(this);
+        bool confirmed = await new ConfirmationDialog(Loc.T("dlg.confirm.deleteForever")).ShowDialog<bool>(this);
         if (!confirmed)
             return;
         try
@@ -64,13 +71,13 @@ public partial class RecycleBinWindow : Window, INotifyPropertyChanged
         }
         catch (System.Exception ex)
         {
-            await new MessageDialog("Не удалось удалить задачу", ex.Message).ShowDialog(this);
+            await new MessageDialog(Loc.T("bin.err.deleteFailed"), ex.Message).ShowDialog(this);
         }
     }
 
     private async void ClearClick(object? sender, RoutedEventArgs e)
     {
-        bool confirmed = await new ConfirmationDialog("Вы действительно хотите очистить корзину?").ShowDialog<bool>(this);
+        bool confirmed = await new ConfirmationDialog(Loc.T("dlg.confirm.emptyBin")).ShowDialog<bool>(this);
         if (!confirmed)
             return;
         try
@@ -81,7 +88,7 @@ public partial class RecycleBinWindow : Window, INotifyPropertyChanged
         }
         catch (System.Exception ex)
         {
-            await new MessageDialog("Не удалось очистить корзину", ex.Message).ShowDialog(this);
+            await new MessageDialog(Loc.T("bin.err.emptyFailed"), ex.Message).ShowDialog(this);
         }
     }
 

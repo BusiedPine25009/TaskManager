@@ -1,18 +1,20 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:TaskManager.Services"
+        x:CompileBindings="False"
         x:Class="TaskManager.Dialogs.ConfirmationDialog"
         Width="460" MinHeight="210" WindowStartupLocation="CenterOwner"
-        CanResize="False" Title="Подтверждение"
+        CanResize="False" Title="{Binding [dlg.confirm.window], Source={x:Static loc:Loc.Instance}}"
         Icon="avares://TaskManager/Assets/app-icon.png">
     <StackPanel Margin="26" Spacing="16">
-        <TextBlock Text="Подтвердите действие" FontSize="22" FontWeight="SemiBold" />
+        <TextBlock Text="{Binding [dlg.confirm.title], Source={x:Static loc:Loc.Instance}}" FontSize="22" FontWeight="SemiBold" />
         <Border Background="{DynamicResource DangerSurfaceBrush}" CornerRadius="9" Padding="14">
             <TextBlock x:Name="MessageText" Foreground="{DynamicResource PrimaryTextBrush}"
                        FontSize="14" TextWrapping="Wrap" />
         </Border>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="9" Margin="0,4,0,0">
-            <Button Classes="secondary" Content="Отмена" Click="CancelClick" />
-            <Button Classes="danger" Content="Удалить" Click="ConfirmClick" />
+            <Button Classes="secondary" Content="{Binding [common.cancel], Source={x:Static loc:Loc.Instance}}" Click="CancelClick" />
+            <Button Classes="danger" Content="{Binding [common.delete], Source={x:Static loc:Loc.Instance}}" Click="ConfirmClick" />
         </StackPanel>
     </StackPanel>
 </Window>

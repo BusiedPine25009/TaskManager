@@ -111,7 +111,7 @@ public class JsonTaskStorage
     public List<TaskItem> LoadBackup()
     {
         if (!File.Exists(BackupFilePath))
-            throw new FileNotFoundException("Резервная копия не найдена.", BackupFilePath);
+            throw new FileNotFoundException(Loc.T("err.backup.notFound"), BackupFilePath);
 
         string json = File.ReadAllText(BackupFilePath);
         return JsonSerializer.Deserialize<List<TaskItem>>(json, Options) ?? new List<TaskItem>();
@@ -126,13 +126,13 @@ public class JsonTaskStorage
         }
         catch (IOException)
         {
-            copyPath = "не удалось создать отдельную копию";
+            copyPath = Loc.T("err.data.copyFailed");
         }
 
         string backupHint = File.Exists(BackupFilePath)
-            ? $" Доступна резервная копия: {BackupFilePath}"
+            ? Loc.T("err.data.backupHint", BackupFilePath)
             : string.Empty;
         return new InvalidDataException(
-            $"Файл данных повреждён. Копия сохранена: {copyPath}.{backupHint}", inner);
+            Loc.T("err.data.corrupted", copyPath, backupHint), inner);
     }
 }

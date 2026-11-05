@@ -1,10 +1,11 @@
 using Avalonia.Controls;
+using TaskManager.Services;
 
 namespace TaskManager.Dialogs;
 
 public partial class MessageDialog : Window
 {
-    public MessageDialog() : this("TaskManager", string.Empty)
+    public MessageDialog() : this(Loc.T("common.message"), string.Empty)
     {
     }
 

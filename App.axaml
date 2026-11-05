@@ -112,11 +112,20 @@
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
         <Style Selector="Button.danger">
+            <Setter Property="Background" Value="{DynamicResource DangerSurfaceBrush}" />
             <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
         </Style>
-        <Style Selector="Button.danger.action">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
+        <!-- Кнопки действий в карточках имеют общий размер и выравнивание.
+             Цвет задаётся классами secondary, danger и accent. -->
+        <Style Selector="Button.action">
+            <Setter Property="MinWidth" Value="108" />
+            <Setter Property="MinHeight" Value="34" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
         <Style Selector="ComboBox, DatePicker, TimePicker, NumericUpDown">
             <Setter Property="MinHeight" Value="38" />

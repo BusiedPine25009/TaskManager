@@ -43,6 +43,7 @@
   "card.overdueBy": "Просрочена на {0}",
   "card.repeatEvery": "Повтор каждые {0} дн.",
   "card.project": "Проект: {0}",
+  "project.defaultName": "Без проекта",
   "card.edit": "Изменить",
   "card.editTooltip": "Изменить задачу",
   "card.delete": "Удалить",

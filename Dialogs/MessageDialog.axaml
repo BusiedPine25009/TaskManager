@@ -1,14 +1,17 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:TaskManager.Services"
+        x:CompileBindings="False"
         x:Class="TaskManager.Dialogs.MessageDialog"
         Width="440" MinHeight="200" WindowStartupLocation="CenterOwner"
-        CanResize="False" Title="TaskManager"
+        CanResize="False" Title="{Binding [common.message], Source={x:Static loc:Loc.Instance}}"
         Icon="avares://TaskManager/Assets/app-icon.png">
     <StackPanel Margin="26" Spacing="16">
-        <TextBlock Text="Сообщение" FontSize="22" FontWeight="SemiBold" />
+        <TextBlock Text="{Binding [common.message], Source={x:Static loc:Loc.Instance}}" FontSize="22" FontWeight="SemiBold" />
         <Border Classes="surface" Padding="14">
             <TextBlock x:Name="MessageText" FontSize="14" TextWrapping="Wrap" />
         </Border>
-        <Button Content="Понятно" Classes="accent" HorizontalAlignment="Right" MinWidth="100" Click="CloseClick" />
+        <Button Content="{Binding [common.ok], Source={x:Static loc:Loc.Instance}}" Classes="accent"
+                HorizontalAlignment="Right" MinWidth="100" Click="CloseClick" />
     </StackPanel>
 </Window>

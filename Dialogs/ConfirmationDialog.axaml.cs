@@ -1,10 +1,11 @@
 using Avalonia.Controls;
+using TaskManager.Services;
 
 namespace TaskManager.Dialogs;
 
 public partial class ConfirmationDialog : Window
 {
-    public ConfirmationDialog() : this("Вы действительно хотите удалить эту задачу?")
+    public ConfirmationDialog() : this(Loc.T("dlg.confirm.deleteTask"))
     {
     }
 

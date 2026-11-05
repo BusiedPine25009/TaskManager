@@ -74,11 +74,11 @@ public sealed class RecycleBinStorage
         }
         catch (IOException)
         {
-            copyPath = "не удалось создать отдельную копию";
+            copyPath = Loc.T("err.data.copyFailed");
         }
 
         return new InvalidDataException(
-            $"Файл корзины повреждён. Копия сохранена: {copyPath}.", inner);
+            Loc.T("err.bin.corrupted", copyPath), inner);
     }
 }
 

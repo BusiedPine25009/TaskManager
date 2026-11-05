@@ -1,31 +1,37 @@
 using Avalonia.Media;
 using System;
+using System.ComponentModel;
+using System.Globalization;
 using TaskManager.Models;
+using TaskManager.Services;
 
 namespace TaskManager.ViewModels;
 
-public sealed class TaskCardViewModel
+public sealed class TaskCardViewModel : INotifyPropertyChanged, IDisposable
 {
     public TaskCardViewModel(TaskItem task)
     {
         Task = task;
+        Loc.Instance.LanguageChanged += LanguageChanged;
     }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     public TaskItem Task { get; }
     public string Title => Task.Title;
     public string Description => Task.Description;
     public bool HasDescription => !string.IsNullOrWhiteSpace(Task.Description);
-    public string DueDateText => $"Срок: {Task.DueDate:dd.MM.yyyy, HH:mm}";
+    public string DueDateText => Loc.T("card.dueText", Task.DueDate.ToString("dd.MM.yyyy, HH:mm", CultureInfo.InvariantCulture));
     public string RemainingText => Task.State == TaskState.Done
-        ? "Выполнена"
+        ? Loc.T("card.remainingDone")
         : FormatRemaining(Task.DueDate - DateTime.Now);
-    public string PriorityText => Task.Priority.ToRussian();
-    public string StateText => Task.State.ToRussian();
+    public string PriorityText => Task.Priority.ToDisplayName();
+    public string StateText => Task.State.ToDisplayName();
     public string TypeText => Task.GetTypeName();
     public string DetailsText => Task switch
     {
-        RecurringTask recurring => $"Повтор каждые {recurring.RepeatEveryDays} дн.",
-        ProjectTask project => $"Проект: {project.ProjectName}",
+        RecurringTask recurring => Loc.T("card.repeatEvery", recurring.RepeatEveryDays),
+        ProjectTask project => Loc.T("card.project", project.ProjectName),
         _ => string.Empty
     };
     public bool HasDetails => !string.IsNullOrEmpty(DetailsText);
@@ -45,26 +51,29 @@ public sealed class TaskCardViewModel
         _ => Brush.Parse("#4B9CD3")
     };
 
+    /// <summary>Формирует локализованную строку оставшегося или просроченного времени.</summary>
+    /// <param name="remaining">Разница между сроком задачи и текущим временем.</param>
     private static string FormatRemaining(TimeSpan remaining)
     {
         bool overdue = remaining < TimeSpan.Zero;
         TimeSpan value = overdue ? remaining.Duration() : remaining;
         string text = value.TotalDays >= 1
-            ? $"{value.Days} {Plural(value.Days, "день", "дня", "дней")} {value.Hours} {Plural(value.Hours, "час", "часа", "часов")}"
+            ? $"{value.Days} {Loc.Plural("time.day", value.Days)} {value.Hours} {Loc.Plural("time.hour", value.Hours)}"
             : value.TotalHours >= 1
-                ? $"{value.Hours} {Plural(value.Hours, "час", "часа", "часов")} {value.Minutes} {Plural(value.Minutes, "минута", "минуты", "минут")}"
-                : $"{Math.Max(1, value.Minutes)} {Plural(Math.Max(1, value.Minutes), "минута", "минуты", "минут")}";
-        return overdue ? $"Просрочена на {text}" : $"Осталось {text}";
+                ? $"{value.Hours} {Loc.Plural("time.hour", value.Hours)} {value.Minutes} {Loc.Plural("time.minute", value.Minutes)}"
+                : $"{Math.Max(1, value.Minutes)} {Loc.Plural("time.minute", Math.Max(1, value.Minutes))}";
+        return overdue ? Loc.T("card.overdueBy", text) : Loc.T("card.timeLeft", text);
     }
 
-    private static string Plural(int value, string one, string few, string many)
+    /// <summary>Обновляет вычисляемые подписи карточки после смены языка интерфейса.</summary>
+    private void LanguageChanged(object? sender, EventArgs e)
     {
-        int lastTwo = value % 100;
-        return lastTwo is >= 11 and <= 14 ? many : (value % 10) switch
-        {
-            1 => one,
-            2 or 3 or 4 => few,
-            _ => many
-        };
+        foreach (string propertyName in new[]
+                 { nameof(DueDateText), nameof(RemainingText), nameof(PriorityText),
+                   nameof(StateText), nameof(TypeText), nameof(DetailsText), nameof(HasDetails) })
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+
+    /// <summary>Отписывает удалённую из списка карточку от глобального события языка.</summary>
+    public void Dispose() => Loc.Instance.LanguageChanged -= LanguageChanged;
 }

@@ -16,6 +16,7 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         RequestedThemeVariant = ThemePreferenceServiceToVariant(new ThemePreferenceService().Load());
+        Loc.Instance.SetLanguage(new LanguagePreferenceService().Load());
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow();

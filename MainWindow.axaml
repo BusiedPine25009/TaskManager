@@ -2,6 +2,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="using:TaskManager"
         xmlns:vm="using:TaskManager.ViewModels"
+        xmlns:loc="using:TaskManager.Services"
+        x:CompileBindings="False"
         x:DataType="local:MainWindow"
         x:Class="TaskManager.MainWindow"
         Width="1120" Height="760" MinWidth="720" MinHeight="560"
@@ -25,11 +27,6 @@
             <Setter Property="Padding" Value="16" />
             <Setter Property="Margin" Value="0,0,0,10" />
         </Style>
-        <Style Selector="Button.action">
-            <Setter Property="MinHeight" Value="31" />
-            <Setter Property="Padding" Value="10,5" />
-            <Setter Property="FontSize" Value="12" />
-        </Style>
     </Window.Styles>
 
     <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="26">
@@ -39,11 +36,35 @@
                     <Run Text="Task" Foreground="{DynamicResource PrimaryTextBrush}" />
                     <Run Text="Manager" Foreground="{DynamicResource AccentBrush}" />
                 </TextBlock>
-                <TextBlock Text="ПЛАНИРУЙТЕ ВАЖНОЕ. ОСТАЛЬНОЕ — ПО ПОРЯДКУ."
+                <TextBlock Text="{Binding [app.subtitle], Source={x:Static loc:Loc.Instance}}"
                            Foreground="{DynamicResource SecondaryTextBrush}" FontSize="13" FontWeight="SemiBold" />
             </StackPanel>
             <WrapPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center"
                        Orientation="Horizontal" ItemSpacing="8">
+                <Button Classes="secondary" ToolTip.Tip="{Binding [lang.tooltip], Source={x:Static loc:Loc.Instance}}"
+                        AutomationProperties.Name="{Binding [lang.tooltip], Source={x:Static loc:Loc.Instance}}">
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <MenuItem Header="{Binding [lang.name.ru], Source={x:Static loc:Loc.Instance}}"
+                                      ToggleType="CheckBox" IsChecked="{Binding IsRussian, Source={x:Static loc:Loc.Instance}, Mode=OneWay}"
+                                      Click="LanguageRussianClick" />
+                            <MenuItem Header="{Binding [lang.name.en], Source={x:Static loc:Loc.Instance}}"
+                                      ToggleType="CheckBox" IsChecked="{Binding IsEnglish, Source={x:Static loc:Loc.Instance}, Mode=OneWay}"
+                                      Click="LanguageEnglishClick" />
+                            <MenuItem Header="{Binding [lang.name.kk], Source={x:Static loc:Loc.Instance}}"
+                                      ToggleType="CheckBox" IsChecked="{Binding IsKazakh, Source={x:Static loc:Loc.Instance}, Mode=OneWay}"
+                                      Click="LanguageKazakhClick" />
+                        </MenuFlyout>
+                    </Button.Flyout>
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Viewbox Width="18" Height="18">
+                            <Canvas Width="24" Height="24">
+                                <Path Classes="icon" Data="M22,12 A10,10 0 1 1 2,12 A10,10 0 1 1 22,12 Z M2,12 H22 M12,2 A15.3,15.3 0 0 1 16,12 A15.3,15.3 0 0 1 12,22 A15.3,15.3 0 0 1 8,12 A15.3,15.3 0 0 1 12,2 Z" />
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="{Binding LanguageButtonText}" FontSize="13" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
                 <Button Classes="secondary" ToolTip.Tip="{Binding ThemeTooltip}" Click="ThemeClick" Padding="12,0">
                     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                         <Panel Width="18" Height="18" VerticalAlignment="Center">
@@ -69,26 +90,26 @@
                         <TextBlock Text="{Binding ThemeLabel}" FontSize="13" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
-                <Button Classes="secondary" Content="{Binding BinButtonText}" ToolTip.Tip="Открыть корзину"
+                <Button Classes="secondary" Content="{Binding BinButtonText}" ToolTip.Tip="{Binding [main.binTooltip], Source={x:Static loc:Loc.Instance}}"
                         Click="OpenBinClick" />
-                <Button Content="＋  Добавить задачу" Classes="accent" Click="AddTaskClick" />
+                <Button Content="{Binding [main.addTask], Source={x:Static loc:Loc.Instance}}" Classes="accent" Click="AddTaskClick" />
             </WrapPanel>
         </Grid>
 
         <Border Grid.Row="1" Classes="surface" Padding="0" Margin="0,0,0,18">
             <Grid ColumnDefinitions="*,*,*">
                 <StackPanel Margin="17,13" Spacing="4">
-                    <TextBlock Text="ВСЕГО ЗАДАЧ" Classes="section-label" />
+                    <TextBlock Text="{Binding [stats.total], Source={x:Static loc:Loc.Instance}}" Classes="section-label" />
                     <TextBlock Text="{Binding TotalCount}" FontSize="25" FontWeight="SemiBold" />
                 </StackPanel>
                 <Border Grid.Column="1" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0">
                     <StackPanel Margin="17,13" Spacing="4">
-                        <TextBlock Text="ВЫПОЛНЕНО" Classes="section-label" />
+                        <TextBlock Text="{Binding [stats.done], Source={x:Static loc:Loc.Instance}}" Classes="section-label" />
                         <TextBlock Text="{Binding DoneCount}" FontSize="25" FontWeight="SemiBold" />
                     </StackPanel>
                 </Border>
                 <StackPanel Grid.Column="2" Margin="17,13" Spacing="4">
-                    <TextBlock Text="ПРОСРОЧЕНО" Classes="section-label" />
+                    <TextBlock Text="{Binding [stats.overdue], Source={x:Static loc:Loc.Instance}}" Classes="section-label" />
                     <TextBlock Text="{Binding OverdueCount}" FontSize="25" FontWeight="SemiBold"
                                Foreground="{DynamicResource DangerBrush}" />
                 </StackPanel>
@@ -97,11 +118,12 @@
 
         <Border Grid.Row="2" Classes="surface" Padding="9" Margin="0,0,0,16">
             <WrapPanel Orientation="Horizontal" VerticalAlignment="Center" ItemSpacing="8" LineSpacing="8">
-                <TextBox x:Name="SearchBox" PlaceholderText="Поиск по задачам" TextChanged="FilterChanged"
+                <TextBox x:Name="SearchBox" PlaceholderText="{Binding [filter.search], Source={x:Static loc:Loc.Instance}}" TextChanged="FilterChanged"
                          Width="260" MinWidth="180" />
                 <ComboBox x:Name="StateFilter" Width="170" SelectionChanged="FilterChanged" />
                 <ComboBox x:Name="PriorityFilter" Width="180" SelectionChanged="FilterChanged" />
-                <Button Classes="secondary" Content="Сбросить" ToolTip.Tip="Сбросить поиск и фильтры"
+                <Button Classes="secondary" Content="{Binding [filter.reset], Source={x:Static loc:Loc.Instance}}"
+                        ToolTip.Tip="{Binding [filter.resetTooltip], Source={x:Static loc:Loc.Instance}}"
                         Click="ResetFiltersClick" />
             </WrapPanel>
         </Border>
@@ -120,7 +142,7 @@
                                                        TextWrapping="Wrap" />
                                             <Border Grid.Column="1" Background="{DynamicResource DangerSurfaceBrush}"
                                                     CornerRadius="6" Padding="8,4" IsVisible="{Binding IsOverdue}">
-                                                <TextBlock Text="Просрочено" Foreground="{DynamicResource DangerBrush}"
+                                                <TextBlock Text="{Binding [card.overdueBadge], Source={x:Static loc:Loc.Instance}}" Foreground="{DynamicResource DangerBrush}"
                                                            FontSize="11" FontWeight="SemiBold" />
                                             </Border>
                                         </Grid>
@@ -128,11 +150,11 @@
                                                    TextWrapping="Wrap" IsVisible="{Binding HasDescription}" />
                                         <WrapPanel Orientation="Horizontal" ItemSpacing="18" LineSpacing="6">
                                             <StackPanel Spacing="3">
-                                                <TextBlock Text="СРОК" Classes="section-label" />
+                                                <TextBlock Text="{Binding [card.dueLabel], Source={x:Static loc:Loc.Instance}}" Classes="section-label" />
                                                 <TextBlock Text="{Binding DueDateText}" FontSize="12" />
                                             </StackPanel>
                                             <StackPanel Spacing="3">
-                                                <TextBlock Text="ОСТАЛОСЬ" Classes="section-label" />
+                                                <TextBlock Text="{Binding [card.remainingLabel], Source={x:Static loc:Loc.Instance}}" Classes="section-label" />
                                                 <TextBlock Text="{Binding RemainingText}" FontSize="12" FontWeight="SemiBold" />
                                             </StackPanel>
                                         </WrapPanel>
@@ -153,11 +175,14 @@
                                         </WrapPanel>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2" Spacing="6" VerticalAlignment="Center">
-                                        <Button Classes="action secondary" Content="Изменить" ToolTip.Tip="Изменить задачу"
+                                        <Button Classes="action secondary" Content="{Binding [card.edit], Source={x:Static loc:Loc.Instance}}"
+                                                ToolTip.Tip="{Binding [card.editTooltip], Source={x:Static loc:Loc.Instance}}"
                                                 Tag="{Binding}" Click="EditTaskClick" />
-                                        <Button Classes="action danger" Content="Удалить" ToolTip.Tip="Переместить в корзину"
+                                        <Button Classes="action danger" Content="{Binding [card.delete], Source={x:Static loc:Loc.Instance}}"
+                                                ToolTip.Tip="{Binding [card.deleteTooltip], Source={x:Static loc:Loc.Instance}}"
                                                 Tag="{Binding}" Click="DeleteTaskClick" />
-                                        <Button Classes="action accent" Content="Готово" ToolTip.Tip="Отметить выполненной"
+                                        <Button Classes="action accent" Content="{Binding [card.done], Source={x:Static loc:Loc.Instance}}"
+                                                ToolTip.Tip="{Binding [card.doneTooltip], Source={x:Static loc:Loc.Instance}}"
                                                 Tag="{Binding}" IsVisible="{Binding CanMarkDone}" Click="MarkDoneClick" />
                                     </StackPanel>
                                 </Grid>

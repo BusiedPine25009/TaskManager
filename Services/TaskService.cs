@@ -73,7 +73,7 @@ public class TaskService
         // Название уже проверено в свойстве Title; здесь проверяем срок.
         // Для старых задач при редактировании это правило не действует.
         if (task.DueDate < DateTime.Now)
-            throw new ArgumentException("Срок выполнения новой задачи не может быть в прошлом.");
+            throw new ArgumentException(Loc.T("err.due.past"));
 
         _tasks.Add(task);
         Save();
@@ -97,7 +97,7 @@ public class TaskService
         if (task == null)
             throw new ArgumentNullException(nameof(task));
         if (_tasks.Any(existing => existing.Id == task.Id))
-            throw new InvalidOperationException("Задача с таким идентификатором уже существует.");
+            throw new InvalidOperationException(Loc.T("err.task.duplicate"));
         _tasks.Add(task);
         Save();
     }
@@ -196,7 +196,7 @@ public class TaskService
         TaskItem? task = _tasks.FirstOrDefault(t => t.Id == id);
 
         if (task == null)
-            throw new KeyNotFoundException("Задача не найдена. Возможно, она уже была удалена.");
+            throw new KeyNotFoundException(Loc.T("err.task.notFound"));
 
         return task;
     }

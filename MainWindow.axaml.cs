@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
@@ -21,15 +22,19 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private readonly JsonTaskStorage _taskStorage;
     private readonly RecycleBinService _recycleBin;
     private readonly ThemePreferenceService _themePreferences = new();
+    private readonly LanguagePreferenceService _languagePreferences = new();
     private readonly DispatcherTimer _refreshTimer;
     private readonly DispatcherTimer _toastTimer;
     private string? _loadError;
     private int _totalCount, _doneCount, _overdueCount;
     private int _binCount;
     private bool _isEmptyStateVisible, _isToastVisible;
-    private string _emptyTitle = "Пока нет задач";
-    private string _emptyMessage = "Добавь первую задачу, чтобы начать планирование";
+    private bool _isRebuildingFilters;
+    private string _emptyTitle = string.Empty;
+    private string _emptyMessage = string.Empty;
     private string _toastMessage = string.Empty;
+    private string? _toastKey;
+    private object[] _toastArguments = Array.Empty<object>();
 
     public MainWindow()
     {
@@ -44,18 +49,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _toastTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3.5) };
         _toastTimer.Tick += (_, _) => HideToast();
 
-        StateFilter.ItemsSource = new[]
-        {
-            new FilterOption<TaskState>("Все статусы", null), new FilterOption<TaskState>("Новые", TaskState.New),
-            new FilterOption<TaskState>("В работе", TaskState.InProgress), new FilterOption<TaskState>("Выполненные", TaskState.Done)
-        };
-        PriorityFilter.ItemsSource = new[]
-        {
-            new FilterOption<Priority>("Все приоритеты", null), new FilterOption<Priority>("Низкий", Priority.Low),
-            new FilterOption<Priority>("Средний", Priority.Medium), new FilterOption<Priority>("Высокий", Priority.High)
-        };
-        StateFilter.SelectedIndex = 0;
-        PriorityFilter.SelectedIndex = 0;
+        UpdateFilterOptions(null, null);
 
         try { _taskService.Load(); }
         catch (Exception ex) when (ex is InvalidDataException or IOException)
@@ -71,7 +65,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
 
         Loaded += MainWindowLoaded;
-        Closed += (_, _) => { _refreshTimer.Stop(); _toastTimer.Stop(); };
+        Loc.Instance.LanguageChanged += LanguageChanged;
+        Closed += (_, _) =>
+        {
+            _refreshTimer.Stop();
+            _toastTimer.Stop();
+            Loc.Instance.LanguageChanged -= LanguageChanged;
+        };
         Refresh();
         _refreshTimer.Start();
     }
@@ -81,7 +81,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     public int DoneCount { get => _doneCount; private set => SetField(ref _doneCount, value); }
     public int OverdueCount { get => _overdueCount; private set => SetField(ref _overdueCount, value); }
     public int BinCount { get => _binCount; private set => SetField(ref _binCount, value); }
-    public string BinButtonText => BinCount > 0 ? $"Корзина ({BinCount})" : "Корзина";
+    public string BinButtonText => BinCount > 0 ? Loc.T("main.binWithCount", BinCount) : Loc.T("main.bin");
+    public string LanguageButtonText => Loc.T($"lang.name.{Loc.Instance.Language}");
     public bool IsEmptyStateVisible { get => _isEmptyStateVisible; private set => SetField(ref _isEmptyStateVisible, value); }
     public string EmptyTitle { get => _emptyTitle; private set => SetField(ref _emptyTitle, value); }
     public string EmptyMessage { get => _emptyMessage; private set => SetField(ref _emptyMessage, value); }
@@ -93,15 +94,15 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     public bool IsDarkTheme => CurrentThemeName() == "Dark";
     public string ThemeLabel => CurrentThemeName() switch
     {
-        "Light" => "Светлая",
-        "Dark" => "Тёмная",
-        _ => "Авто"
+        "Light" => Loc.T("theme.light"),
+        "Dark" => Loc.T("theme.dark"),
+        _ => Loc.T("theme.auto")
     };
     public string ThemeTooltip => CurrentThemeName() switch
     {
-        "Light" => "Светлая тема. Нажмите, чтобы включить тёмную",
-        "Dark" => "Тёмная тема. Нажмите, чтобы вернуть системную",
-        _ => "Тема следует настройкам системы. Нажмите, чтобы включить светлую"
+        "Light" => Loc.T("theme.tip.light"),
+        "Dark" => Loc.T("theme.tip.dark"),
+        _ => Loc.T("theme.tip.system")
     };
 
     public new event PropertyChangedEventHandler? PropertyChanged;
@@ -111,11 +112,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         Loaded -= MainWindowLoaded;
         if (_loadError != null)
         {
-            await new MessageDialog("Не удалось загрузить данные", _loadError).ShowDialog(this);
+            await new MessageDialog(Loc.T("dlg.loadError.title"), _loadError).ShowDialog(this);
             if (File.Exists(_taskStorage.BackupFilePath))
             {
                 bool restore = await new RecoveryDialog(
-                    $"Основной файл задач повреждён. Найдена резервная копия:\n{_taskStorage.BackupFilePath}\n\nВосстановить её?").ShowDialog<bool>(this);
+                    Loc.T("dlg.recovery.message", _taskStorage.BackupFilePath)).ShowDialog<bool>(this);
                 if (restore)
                 {
                     try
@@ -123,7 +124,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                         _taskService.RestoreFromBackup();
                         _loadError = null;
                         Refresh();
-                        ShowToast("Данные восстановлены из резервной копии");
+                        ShowToast("toast.restoredBackup");
                     }
                     catch (Exception ex) { await ShowError(ex.Message); }
                 }
@@ -135,7 +136,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         TaskItem? task = await new TaskEditWindow().ShowDialog<TaskItem?>(this);
         if (task == null) return;
-        try { _taskService.Add(task); Refresh(); ShowToast("Задача успешно добавлена"); }
+        try { _taskService.Add(task); Refresh(); ShowToast("toast.added"); }
         catch (Exception ex) { await ShowError(ex.Message); }
     }
 
@@ -144,22 +145,22 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (GetTask(sender) is not { } current) return;
         TaskItem? replacement = await new TaskEditWindow(current).ShowDialog<TaskItem?>(this);
         if (replacement == null) return;
-        try { _taskService.Update(replacement); Refresh(); ShowToast("Изменения сохранены"); }
+        try { _taskService.Update(replacement); Refresh(); ShowToast("toast.saved"); }
         catch (Exception ex) { await ShowError(ex.Message); }
     }
 
     private async void DeleteTaskClick(object? sender, RoutedEventArgs e)
     {
         if (GetTask(sender) is not { } task) return;
-        if (!await new ConfirmationDialog().ShowDialog<bool>(this)) return;
-        try { _taskService.Remove(task.Id); Refresh(); ShowToast("Задача перемещена в корзину"); }
+        if (!await new ConfirmationDialog(Loc.T("dlg.confirm.deleteTask")).ShowDialog<bool>(this)) return;
+        try { _taskService.Remove(task.Id); Refresh(); ShowToast("toast.movedToBin"); }
         catch (Exception ex) { await ShowError(ex.Message); }
     }
 
     private async void MarkDoneClick(object? sender, RoutedEventArgs e)
     {
         if (GetTask(sender) is not { } task) return;
-        try { _taskService.MarkDone(task.Id); Refresh(); ShowToast(task is RecurringTask ? "Срок повторяющейся задачи перенесён" : "Задача выполнена"); }
+        try { _taskService.MarkDone(task.Id); Refresh(); ShowToast(task is RecurringTask ? "toast.recurringShifted" : "toast.done"); }
         catch (Exception ex) { await ShowError(ex.Message); }
     }
 
@@ -174,19 +175,19 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 _taskService.Restore(task);
                 _recycleBin.RemoveRestored(result.TaskId);
                 Refresh();
-                ShowToast("Задача восстановлена");
+                ShowToast("toast.restored");
             }
             catch (Exception ex) { await ShowError(ex.Message); }
         }
         else if (result is { Action: RecycleBinAction.DeletePermanently })
         {
             Refresh();
-            ShowToast("Задача окончательно удалена");
+            ShowToast("toast.deletedForever");
         }
         else if (result is { Action: RecycleBinAction.Clear })
         {
             Refresh();
-            ShowToast("Корзина очищена");
+            ShowToast("toast.binEmptied");
         }
         else
         {
@@ -212,7 +213,88 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         Raise(nameof(ThemeTooltip));
     }
 
-    private void FilterChanged(object? sender, RoutedEventArgs e) => Refresh();
+    /// <summary>Выбирает русский язык, сохраняет его и обновляет открытый интерфейс.</summary>
+    private void LanguageRussianClick(object? sender, RoutedEventArgs e) => SelectLanguage("ru");
+
+    /// <summary>Выбирает английский язык, сохраняет его и обновляет открытый интерфейс.</summary>
+    private void LanguageEnglishClick(object? sender, RoutedEventArgs e) => SelectLanguage("en");
+
+    /// <summary>Выбирает казахский язык, сохраняет его и обновляет открытый интерфейс.</summary>
+    private void LanguageKazakhClick(object? sender, RoutedEventArgs e) => SelectLanguage("kk");
+
+    /// <summary>
+    /// Сохраняет выбранный код языка отдельно от настройки темы и применяет его
+    /// через singleton локализации; уведомление сервиса обновит привязки и фильтры.
+    /// </summary>
+    /// <param name="language">Поддерживаемый код ru, en или kk.</param>
+    private void SelectLanguage(string language)
+    {
+        _languagePreferences.Save(language);
+        Loc.Instance.SetLanguage(language);
+    }
+
+    /// <summary>
+    /// Перестраивает подписи фильтров на активном языке, сохраняя выбранные enum-значения.
+    /// Блокировка обработчика предотвращает промежуточное обновление списка при перестройке.
+    /// </summary>
+    /// <param name="selectedState">Статус фильтра до перестройки.</param>
+    /// <param name="selectedPriority">Приоритет фильтра до перестройки.</param>
+    private void UpdateFilterOptions(TaskState? selectedState, Priority? selectedPriority)
+    {
+        _isRebuildingFilters = true;
+        try
+        {
+            FilterOption<TaskState>[] states =
+            [
+                new(Loc.T("filter.allStatuses"), null),
+                new(Loc.T("filter.statusNew"), TaskState.New),
+                new(Loc.T("filter.statusInProgress"), TaskState.InProgress),
+                new(Loc.T("filter.statusDone"), TaskState.Done)
+            ];
+            FilterOption<Priority>[] priorities =
+            [
+                new(Loc.T("filter.allPriorities"), null),
+                new(Loc.T("enum.priority.low"), Priority.Low),
+                new(Loc.T("enum.priority.medium"), Priority.Medium),
+                new(Loc.T("enum.priority.high"), Priority.High)
+            ];
+
+            StateFilter.ItemsSource = states;
+            PriorityFilter.ItemsSource = priorities;
+            StateFilter.SelectedItem = states.First(option => option.Value == selectedState);
+            PriorityFilter.SelectedItem = priorities.First(option => option.Value == selectedPriority);
+        }
+        finally
+        {
+            _isRebuildingFilters = false;
+        }
+    }
+
+    /// <summary>
+    /// Обновляет вычисляемые подписи и карточки после смены языка, не сбрасывая
+    /// фильтры, поисковый запрос, тему приложения или уже показанное уведомление.
+    /// </summary>
+    private void LanguageChanged(object? sender, EventArgs e)
+    {
+        TaskState? selectedState = (StateFilter.SelectedItem as FilterOption<TaskState>)?.Value;
+        Priority? selectedPriority = (PriorityFilter.SelectedItem as FilterOption<Priority>)?.Value;
+        UpdateFilterOptions(selectedState, selectedPriority);
+        Raise(nameof(LanguageButtonText));
+        Raise(nameof(BinButtonText));
+        Raise(nameof(ThemeLabel));
+        Raise(nameof(ThemeTooltip));
+        Refresh();
+
+        if (IsToastVisible && _toastKey != null)
+            ToastMessage = Loc.T(_toastKey, _toastArguments);
+    }
+
+    private void FilterChanged(object? sender, RoutedEventArgs e)
+    {
+        if (!_isRebuildingFilters)
+            Refresh();
+    }
+
     private void ResetFiltersClick(object? sender, RoutedEventArgs e)
     {
         SearchBox.Text = string.Empty; StateFilter.SelectedIndex = 0; PriorityFilter.SelectedIndex = 0; Refresh();
@@ -228,17 +310,24 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         TaskState? state = (StateFilter.SelectedItem as FilterOption<TaskState>)?.Value;
         Priority? priority = (PriorityFilter.SelectedItem as FilterOption<Priority>)?.Value;
         var tasks = _taskService.Find(SearchBox.Text, state, priority);
+        foreach (TaskCardViewModel card in VisibleTasks)
+            card.Dispose();
         VisibleTasks.Clear();
         foreach (TaskItem task in tasks) VisibleTasks.Add(new TaskCardViewModel(task));
         IsEmptyStateVisible = VisibleTasks.Count == 0;
         bool hasFilters = !string.IsNullOrWhiteSpace(SearchBox.Text) || state.HasValue || priority.HasValue;
-        EmptyTitle = hasFilters ? "Ничего не найдено" : "Пока нет задач";
-        EmptyMessage = hasFilters ? "Измени поисковый запрос или сбрось фильтры" : "Добавь первую задачу, чтобы начать планирование";
+        EmptyTitle = hasFilters ? Loc.T("empty.noResults.title") : Loc.T("empty.noTasks.title");
+        EmptyMessage = hasFilters ? Loc.T("empty.noResults.message") : Loc.T("empty.noTasks.message");
     }
 
-    private void ShowToast(string message)
+    /// <summary>Показывает уведомление по ключу локализации на активном языке.</summary>
+    /// <param name="key">Ключ уведомления.</param>
+    /// <param name="args">Аргументы форматируемой строки, если они нужны.</param>
+    private void ShowToast(string key, params object[] args)
     {
-        ToastMessage = message;
+        _toastKey = key;
+        _toastArguments = args;
+        ToastMessage = Loc.T(key, args);
         IsToastVisible = true;
         _toastTimer.Stop();
         _toastTimer.Start();
@@ -246,7 +335,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void HideToast() { _toastTimer.Stop(); IsToastVisible = false; }
     private void CloseToastClick(object? sender, RoutedEventArgs e) => HideToast();
-    private async System.Threading.Tasks.Task ShowError(string message) => await new MessageDialog("Ошибка", message).ShowDialog(this);
+    private async System.Threading.Tasks.Task ShowError(string message)
+        => await new MessageDialog(Loc.T("common.error"), message).ShowDialog(this);
     private static TaskItem? GetTask(object? sender) => (sender as Button)?.Tag is TaskCardViewModel card ? card.Task : null;
     private void Raise(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     private static string CurrentThemeName() => Application.Current?.RequestedThemeVariant?.ToString() ?? "Default";

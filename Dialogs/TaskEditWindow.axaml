@@ -1,42 +1,44 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:TaskManager.Services"
+        x:CompileBindings="False"
         x:Class="TaskManager.Dialogs.TaskEditWindow"
         Width="560" Height="720" MinWidth="480" MinHeight="500"
-        WindowStartupLocation="CenterOwner" Title="Задача"
+        WindowStartupLocation="CenterOwner" Title="{Binding [edit.window], Source={x:Static loc:Loc.Instance}}"
         Icon="avares://TaskManager/Assets/app-icon.png">
     <Grid RowDefinitions="*,Auto">
     <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="26,26,26,18" Spacing="12">
             <TextBlock x:Name="HeaderText" FontSize="25" FontWeight="SemiBold" />
-            <TextBlock Text="Заполните детали и срок выполнения" Classes="secondary" Margin="0,0,0,6" />
+            <TextBlock Text="{Binding [edit.subtitle], Source={x:Static loc:Loc.Instance}}" Classes="secondary" Margin="0,0,0,6" />
 
             <Border Classes="surface" Padding="16">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="ОСНОВНОЕ" Classes="section-label" />
-                    <TextBlock Text="Название" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding [edit.section.main], Source={x:Static loc:Loc.Instance}}" Classes="section-label" />
+                    <TextBlock Text="{Binding [edit.name], Source={x:Static loc:Loc.Instance}}" FontWeight="SemiBold" />
                     <TextBox x:Name="TitleBox" MaxLength="100" />
                     <TextBlock x:Name="TitleError" Classes="error" />
-                    <TextBlock Text="Описание" FontWeight="SemiBold" Margin="0,5,0,0" />
+                    <TextBlock Text="{Binding [edit.description], Source={x:Static loc:Loc.Instance}}" FontWeight="SemiBold" Margin="0,5,0,0" />
                     <TextBox x:Name="DescriptionBox" MinHeight="82" TextWrapping="Wrap" AcceptsReturn="True" />
                 </StackPanel>
             </Border>
 
             <Border Classes="surface" Padding="16">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="СРОК И СОСТОЯНИЕ" Classes="section-label" />
-                    <TextBlock Text="Дата выполнения" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding [edit.section.due], Source={x:Static loc:Loc.Instance}}" Classes="section-label" />
+                    <TextBlock Text="{Binding [edit.date], Source={x:Static loc:Loc.Instance}}" FontWeight="SemiBold" />
                     <DatePicker x:Name="DueDatePicker" HorizontalAlignment="Stretch" />
                     <TextBlock x:Name="DueDateError" Classes="error" />
-                    <TextBlock Text="Время выполнения" FontWeight="SemiBold" Margin="0,4,0,0" />
+                    <TextBlock Text="{Binding [edit.time], Source={x:Static loc:Loc.Instance}}" FontWeight="SemiBold" Margin="0,4,0,0" />
                     <TimePicker x:Name="DueTimePicker" ClockIdentifier="24HourClock" HorizontalAlignment="Stretch" />
                     <TextBlock x:Name="DueTimeError" Classes="error" />
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,4,0,0">
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Приоритет" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding [edit.priority], Source={x:Static loc:Loc.Instance}}" FontWeight="SemiBold" />
                             <ComboBox x:Name="PriorityBox" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Spacing="6">
-                            <TextBlock Text="Статус" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding [edit.status], Source={x:Static loc:Loc.Instance}}" FontWeight="SemiBold" />
                             <ComboBox x:Name="StateBox" />
                         </StackPanel>
                     </Grid>
@@ -45,15 +47,15 @@
 
             <Border Classes="surface" Padding="16">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="ТИП ЗАДАЧИ" Classes="section-label" />
+                    <TextBlock Text="{Binding [edit.section.type], Source={x:Static loc:Loc.Instance}}" Classes="section-label" />
                     <ComboBox x:Name="TypeBox" />
                     <StackPanel x:Name="RecurringPanel" Spacing="6" IsVisible="False" Margin="0,5,0,0">
-                        <TextBlock Text="Повторять каждые N дней" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding [edit.repeat], Source={x:Static loc:Loc.Instance}}" FontWeight="SemiBold" />
                         <NumericUpDown x:Name="RepeatBox" Minimum="1" Maximum="365" Increment="1" />
                         <TextBlock x:Name="RepeatError" Classes="error" />
                     </StackPanel>
                     <StackPanel x:Name="ProjectPanel" Spacing="6" IsVisible="False" Margin="0,5,0,0">
-                        <TextBlock Text="Название проекта" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding [edit.project], Source={x:Static loc:Loc.Instance}}" FontWeight="SemiBold" />
                         <TextBox x:Name="ProjectBox" />
                         <TextBlock x:Name="ProjectError" Classes="error" />
                     </StackPanel>
@@ -66,8 +68,8 @@
     <!-- Панель кнопок всегда видна, даже если форма длиннее окна -->
     <Border Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="26,14">
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="9">
-            <Button Classes="secondary" Content="Отмена" IsCancel="True" Click="CancelClick" />
-            <Button Content="Сохранить задачу" Classes="accent" IsDefault="True" Click="SaveClick" />
+            <Button Classes="secondary" Content="{Binding [common.cancel], Source={x:Static loc:Loc.Instance}}" IsCancel="True" Click="CancelClick" />
+            <Button Content="{Binding [edit.save], Source={x:Static loc:Loc.Instance}}" Classes="accent" IsDefault="True" Click="SaveClick" />
         </StackPanel>
     </Border>
     </Grid>

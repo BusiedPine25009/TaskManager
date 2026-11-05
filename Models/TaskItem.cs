@@ -1,5 +1,7 @@
 using System;
+using System.Globalization;
 using System.Text.Json.Serialization;
+using TaskManager.Services;
 
 namespace TaskManager.Models;
 
@@ -34,10 +36,10 @@ public class TaskItem
         set
         {
             if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentException("Название задачи не может быть пустым.");
+                throw new ArgumentException(Loc.T("err.title.empty"));
 
             if (value.Trim().Length > MaxTitleLength)
-                throw new ArgumentException($"Название задачи не должно быть длиннее {MaxTitleLength} символов.");
+                throw new ArgumentException(Loc.T("err.title.long", MaxTitleLength));
 
             _title = value.Trim();
         }
@@ -77,7 +79,7 @@ public class TaskItem
     /// Название вида задачи для отображения в интерфейсе.
     /// Виртуальный метод: каждый наследник возвращает своё значение (полиморфизм).
     /// </summary>
-    public virtual string GetTypeName() => "Обычная";
+    public virtual string GetTypeName() => Loc.T("enum.type.basic");
 
     /// <summary>
     /// Отмечает задачу выполненной.
@@ -95,6 +97,7 @@ public class TaskItem
     public virtual string GetDetails()
     {
         // this.Priority / this.State — явное обращение к свойствам объекта
-        return $"{Title} | срок: {DueDate:dd.MM.yyyy} | приоритет: {this.Priority.ToRussian()} | статус: {this.State.ToRussian()}";
+        string dueDate = DueDate.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture);
+        return $"{Title} | {Loc.T("card.dueText", dueDate)} | {Priority.ToDisplayName()} | {State.ToDisplayName()}";
     }
 }

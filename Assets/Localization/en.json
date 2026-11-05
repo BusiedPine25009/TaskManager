@@ -43,6 +43,7 @@
   "card.overdueBy": "Overdue by {0}",
   "card.repeatEvery": "Repeats every {0} d.",
   "card.project": "Project: {0}",
+  "project.defaultName": "No project",
   "card.edit": "Edit",
   "card.editTooltip": "Edit task",
   "card.delete": "Delete",
