@@ -2,7 +2,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="TaskManager.Dialogs.TaskEditWindow"
         Width="560" Height="720" MinWidth="480" MinHeight="500"
-        WindowStartupLocation="CenterOwner" Title="Задача">
+        WindowStartupLocation="CenterOwner" Title="Задача"
+        Icon="avares://TaskManager/Assets/app-icon.png">
     <Grid RowDefinitions="*,Auto">
     <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="26,26,26,18" Spacing="12">

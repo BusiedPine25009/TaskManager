@@ -3,7 +3,8 @@
         x:CompileBindings="False"
         x:Class="TaskManager.Dialogs.RecoveryDialog"
         Width="520" MinHeight="240" CanResize="False"
-        WindowStartupLocation="CenterOwner" Title="Восстановление данных">
+        WindowStartupLocation="CenterOwner" Title="Восстановление данных"
+        Icon="avares://TaskManager/Assets/app-icon.png">
     <StackPanel Margin="26" Spacing="16">
         <TextBlock Text="Восстановление данных" FontSize="22" FontWeight="SemiBold" />
         <Border Classes="surface" Padding="15">

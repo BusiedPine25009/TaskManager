@@ -2,7 +2,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="TaskManager.Dialogs.ConfirmationDialog"
         Width="460" MinHeight="210" WindowStartupLocation="CenterOwner"
-        CanResize="False" Title="Подтверждение">
+        CanResize="False" Title="Подтверждение"
+        Icon="avares://TaskManager/Assets/app-icon.png">
     <StackPanel Margin="26" Spacing="16">
         <TextBlock Text="Подтвердите действие" FontSize="22" FontWeight="SemiBold" />
         <Border Background="{DynamicResource DangerSurfaceBrush}" CornerRadius="9" Padding="14">

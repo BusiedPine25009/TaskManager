@@ -5,7 +5,8 @@
         x:DataType="local:RecycleBinWindow"
         x:Class="TaskManager.Dialogs.RecycleBinWindow"
         Width="820" Height="600" MinWidth="620" MinHeight="420"
-        WindowStartupLocation="CenterOwner" Title="Корзина">
+        WindowStartupLocation="CenterOwner" Title="Корзина"
+        Icon="avares://TaskManager/Assets/app-icon.png">
     <Grid RowDefinitions="Auto,*" Margin="26">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14" Margin="0,0,0,18">
             <StackPanel Spacing="4" VerticalAlignment="Center">
