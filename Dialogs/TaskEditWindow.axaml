@@ -3,7 +3,7 @@
         xmlns:loc="using:TaskManager.Services"
         x:CompileBindings="False"
         x:Class="TaskManager.Dialogs.TaskEditWindow"
-        Width="560" Height="720" MinWidth="480" MinHeight="500"
+        Width="600" Height="760" MinWidth="500" MinHeight="540"
         WindowStartupLocation="CenterOwner" Title="{Binding [edit.window], Source={x:Static loc:Loc.Instance}}"
         Icon="avares://TaskManager/Assets/app-icon.png">
     <Grid RowDefinitions="*,Auto">
@@ -24,13 +24,46 @@
             </Border>
 
             <Border Classes="surface" Padding="16">
+                <StackPanel Spacing="9">
+                    <TextBlock Text="{Binding [attachment.section], Source={x:Static loc:Loc.Instance}}" Classes="section-label" />
+                    <TextBlock Text="{Binding [attachment.hint], Source={x:Static loc:Loc.Instance}}" Classes="secondary" TextWrapping="Wrap" />
+                    <ItemsControl ItemsSource="{Binding Attachments}">
+                        <ItemsControl.ItemTemplate><DataTemplate>
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8" Margin="0,2">
+                                <TextBlock Text="{Binding FileName}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{Binding Extension}" Classes="secondary" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Text="{Binding SizeText}" Classes="secondary" FontSize="11" VerticalAlignment="Center" />
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="5"><Button Classes="secondary" Content="{Binding [attachment.open], Source={x:Static loc:Loc.Instance}}" Tag="{Binding}" Click="OpenAttachmentClick" /><Button Classes="danger" Content="{Binding [attachment.remove], Source={x:Static loc:Loc.Instance}}" Tag="{Binding}" Click="RemoveAttachmentClick" /></StackPanel>
+                            </Grid>
+                        </DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button Classes="secondary" Content="{Binding [attachment.add], Source={x:Static loc:Loc.Instance}}" HorizontalAlignment="Left" Click="AttachFileClick" />
+                </StackPanel>
+            </Border>
+
+            <Border Classes="surface" Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{Binding [reminder.section], Source={x:Static loc:Loc.Instance}}" Classes="section-label" />
+                    <CheckBox x:Name="ReminderCheck" Content="{Binding [reminder.enable], Source={x:Static loc:Loc.Instance}}" IsCheckedChanged="ReminderChanged" />
+                    <!-- Дата и время напоминания друг под другом: рядом они не помещаются (DatePicker шире половины окна) -->
+                    <StackPanel x:Name="ReminderFields" Spacing="8" IsVisible="False">
+                        <TextBlock Text="{Binding [reminder.date], Source={x:Static loc:Loc.Instance}}" FontWeight="SemiBold" />
+                        <DatePicker x:Name="ReminderDatePicker" HorizontalAlignment="Left" />
+                        <TextBlock Text="{Binding [reminder.time], Source={x:Static loc:Loc.Instance}}" FontWeight="SemiBold" Margin="0,4,0,0" />
+                        <TimePicker x:Name="ReminderTimePicker" ClockIdentifier="24HourClock" HorizontalAlignment="Left" />
+                    </StackPanel>
+                    <TextBlock x:Name="ReminderError" Classes="error" />
+                </StackPanel>
+            </Border>
+
+            <Border Classes="surface" Padding="16">
                 <StackPanel Spacing="8">
                     <TextBlock Text="{Binding [edit.section.due], Source={x:Static loc:Loc.Instance}}" Classes="section-label" />
                     <TextBlock Text="{Binding [edit.date], Source={x:Static loc:Loc.Instance}}" FontWeight="SemiBold" />
-                    <DatePicker x:Name="DueDatePicker" HorizontalAlignment="Stretch" />
+                    <DatePicker x:Name="DueDatePicker" HorizontalAlignment="Left" />
                     <TextBlock x:Name="DueDateError" Classes="error" />
                     <TextBlock Text="{Binding [edit.time], Source={x:Static loc:Loc.Instance}}" FontWeight="SemiBold" Margin="0,4,0,0" />
-                    <TimePicker x:Name="DueTimePicker" ClockIdentifier="24HourClock" HorizontalAlignment="Stretch" />
+                    <TimePicker x:Name="DueTimePicker" ClockIdentifier="24HourClock" HorizontalAlignment="Left" />
                     <TextBlock x:Name="DueTimeError" Classes="error" />
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,4,0,0">
                         <StackPanel Spacing="6">
@@ -68,7 +101,7 @@
     <!-- Панель кнопок всегда видна, даже если форма длиннее окна -->
     <Border Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="26,14">
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="9">
-            <Button Classes="secondary" Content="{Binding [common.cancel], Source={x:Static loc:Loc.Instance}}" IsCancel="True" Click="CancelClick" />
+            <Button Classes="secondary" Content="{Binding [common.cancel], Source={x:Static loc:Loc.Instance}}" Click="CancelClick" />
             <Button Content="{Binding [edit.save], Source={x:Static loc:Loc.Instance}}" Classes="accent" IsDefault="True" Click="SaveClick" />
         </StackPanel>
     </Border>

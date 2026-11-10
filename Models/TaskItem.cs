@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using TaskManager.Services;
 
@@ -68,6 +69,18 @@ public class TaskItem
     /// <summary>Дата и время создания задачи.</summary>
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+    /// <summary>Момент завершения; у старых задач отсутствует, поэтому аналитика не придумывает дату.</summary>
+    public DateTime? CompletedAt { get; set; }
+
+    /// <summary>Запланированное локальное время напоминания или null, если оно отключено.</summary>
+    public DateTime? ReminderAt { get; set; }
+
+    /// <summary>Метка уже отправленного уведомления, защищающая от повторов после запуска.</summary>
+    public DateTime? ReminderSentAt { get; set; }
+
+    /// <summary>Вложения задачи; старые JSON-файлы безопасно создадут пустой список.</summary>
+    public List<TaskAttachment> Attachments { get; set; } = new();
+
     /// <summary>
     /// Признак просроченной задачи: срок прошёл, а задача не выполнена.
     /// Вычисляется на лету, в файл не сохраняется (JsonIgnore).
@@ -88,6 +101,8 @@ public class TaskItem
     public virtual void MarkDone()
     {
         State = TaskState.Done;
+        CompletedAt = DateTime.Now;
+        ReminderAt = null;
     }
 
     /// <summary>

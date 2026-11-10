@@ -92,6 +92,10 @@
                 </Button>
                 <Button Classes="secondary" Content="{Binding BinButtonText}" ToolTip.Tip="{Binding [main.binTooltip], Source={x:Static loc:Loc.Instance}}"
                         Click="OpenBinClick" />
+                <Button Classes="secondary" Content="{Binding [main.calendar], Source={x:Static loc:Loc.Instance}}"
+                        ToolTip.Tip="{Binding [main.calendarTooltip], Source={x:Static loc:Loc.Instance}}" Click="OpenCalendarClick" />
+                <Button Classes="secondary" Content="{Binding [main.analytics], Source={x:Static loc:Loc.Instance}}"
+                        ToolTip.Tip="{Binding [main.analyticsTooltip], Source={x:Static loc:Loc.Instance}}" Click="OpenAnalyticsClick" />
                 <Button Content="{Binding [main.addTask], Source={x:Static loc:Loc.Instance}}" Classes="accent" Click="AddTaskClick" />
             </WrapPanel>
         </Grid>

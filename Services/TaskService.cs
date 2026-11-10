@@ -148,6 +148,13 @@ public class TaskService
         Save();
     }
 
+    /// <summary>Сохраняет отметку об отправке напоминания без изменения самой задачи.</summary>
+    public void MarkReminderSent(Guid id, DateTime sentAt)
+    {
+        FindOrThrow(id).ReminderSentAt = sentAt;
+        Save();
+    }
+
     /// <summary>
     /// Возвращает все задачи в удобном порядке: невыполненные сверху,
     /// затем по сроку, затем по приоритету (высокий раньше).

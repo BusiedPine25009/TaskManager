@@ -1,0 +1,154 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:TaskManager.Dialogs"
+        xmlns:vm="using:TaskManager.ViewModels"
+        xmlns:loc="using:TaskManager.Services"
+        x:CompileBindings="False" x:DataType="local:CalendarWindow"
+        x:Class="TaskManager.Dialogs.CalendarWindow"
+        Width="1100" Height="780" MinWidth="820" MinHeight="600"
+        WindowStartupLocation="CenterOwner" Title="{Binding [calendar.title], Source={x:Static loc:Loc.Instance}}"
+        Icon="avares://TaskManager/Assets/app-icon.png">
+
+    <Window.Styles>
+        <!-- Ячейка дня: обычная кнопка, растянутая на всю ячейку сетки, как в стандартных календарях -->
+        <Style Selector="Button.calendar-day">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        </Style>
+        <!-- Дни соседних месяцев бледнее -->
+        <Style Selector="Button.calendar-day.other">
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+        <!-- Выбранный день: акцентная рамка и мягкий фон -->
+        <Style Selector="Button.calendar-day.selected">
+            <Setter Property="Background" Value="{DynamicResource SubtleBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <Style Selector="Button.calendar-day.selected /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <!-- Номер дня; сегодняшний день отмечен акцентным кружком -->
+        <Style Selector="Border.day-number">
+            <Setter Property="MinWidth" Value="26" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="CornerRadius" Value="13" />
+            <Setter Property="Padding" Value="7,0" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+        <Style Selector="Border.day-number.today">
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+        </Style>
+        <Style Selector="Border.day-number.today > TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+        </Style>
+    </Window.Styles>
+
+    <Grid ColumnDefinitions="*,320" Margin="26" ColumnSpacing="18">
+        <Grid RowDefinitions="Auto,Auto,*" RowSpacing="10">
+            <!-- Переключение месяца -->
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                <Button Classes="secondary" Content="‹" MinWidth="42" FontSize="18" Click="PreviousMonthClick" />
+                <TextBlock Grid.Column="1" Text="{Binding MonthTitle}" FontSize="24" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <Button Grid.Column="2" Classes="secondary" Content="›" MinWidth="42" FontSize="18" Click="NextMonthClick" />
+            </Grid>
+
+            <!-- Названия дней недели: семь равных колонок, как и в сетке ниже -->
+            <UniformGrid Grid.Row="1" Columns="7" Margin="2,4,2,0">
+                <TextBlock Text="{Binding [calendar.mon], Source={x:Static loc:Loc.Instance}}" Classes="section-label" HorizontalAlignment="Center" />
+                <TextBlock Text="{Binding [calendar.tue], Source={x:Static loc:Loc.Instance}}" Classes="section-label" HorizontalAlignment="Center" />
+                <TextBlock Text="{Binding [calendar.wed], Source={x:Static loc:Loc.Instance}}" Classes="section-label" HorizontalAlignment="Center" />
+                <TextBlock Text="{Binding [calendar.thu], Source={x:Static loc:Loc.Instance}}" Classes="section-label" HorizontalAlignment="Center" />
+                <TextBlock Text="{Binding [calendar.fri], Source={x:Static loc:Loc.Instance}}" Classes="section-label" HorizontalAlignment="Center" />
+                <TextBlock Text="{Binding [calendar.sat], Source={x:Static loc:Loc.Instance}}" Classes="section-label" HorizontalAlignment="Center" />
+                <TextBlock Text="{Binding [calendar.sun], Source={x:Static loc:Loc.Instance}}" Classes="section-label" HorizontalAlignment="Center" />
+            </UniformGrid>
+
+            <!-- Сетка месяца: 7 колонок на 6 строк, ячейки делят всё доступное место поровну -->
+            <ItemsControl Grid.Row="2" ItemsSource="{Binding Days}">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="7" Rows="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:CalendarDayViewModel">
+                        <Button Classes="calendar-day"
+                                Classes.today="{Binding IsToday}"
+                                Classes.selected="{Binding IsSelected}"
+                                Classes.other="{Binding IsOtherMonth}"
+                                Tag="{Binding}" Click="DayClick">
+                            <Grid RowDefinitions="Auto,*">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <Border Classes="day-number" Classes.today="{Binding IsToday}">
+                                        <TextBlock Text="{Binding DayNumber}" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Grid.Column="1" Text="{Binding TaskCount}" Classes="secondary" FontSize="11"
+                                               HorizontalAlignment="Right" VerticalAlignment="Center" IsVisible="{Binding HasTasks}" />
+                                </Grid>
+                                <!-- Первые задачи дня прямо в ячейке: цветная полоска и название -->
+                                <StackPanel Grid.Row="1" Margin="0,5,0,0" Spacing="2">
+                                    <ItemsControl ItemsSource="{Binding Preview}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:CalendarChipViewModel">
+                                                <Border Background="{DynamicResource HoverBrush}" CornerRadius="4" Margin="0,0,0,2" ClipToBounds="True">
+                                                    <Grid ColumnDefinitions="3,*">
+                                                        <Border Background="{Binding Color}" />
+                                                        <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="11" Margin="5,1"
+                                                                   TextTrimming="CharacterEllipsis" HorizontalAlignment="Left" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock Text="{Binding MoreText}" Classes="secondary" FontSize="11" IsVisible="{Binding HasMore}" />
+                                </StackPanel>
+                            </Grid>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+
+        <!-- Правая колонка: задачи выбранного дня -->
+        <Border Grid.Column="1" Classes="surface" Padding="16">
+            <Grid RowDefinitions="Auto,Auto,*" RowSpacing="12">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{Binding SelectedDateTitle}" FontSize="19" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding [calendar.selectedHint], Source={x:Static loc:Loc.Instance}}" Classes="secondary" TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Row="1" Content="{Binding [calendar.addForDay], Source={x:Static loc:Loc.Instance}}" Classes="accent" Click="AddForDayClick" />
+                <Grid Grid.Row="2">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding SelectedTasks}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CalendarTaskViewModel">
+                                    <Button Classes="secondary" Tag="{Binding}" Click="EditTaskClick" Margin="0,0,0,7"
+                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                                        <Grid ColumnDefinitions="4,Auto,*" ColumnSpacing="9">
+                                            <Border Background="{Binding AccentColor}" CornerRadius="2" />
+                                            <TextBlock Grid.Column="1" Text="{Binding TimeText}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                            <StackPanel Grid.Column="2" Spacing="2">
+                                                <TextBlock Text="{Binding Title}" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding StateText}" Classes="secondary" FontSize="11" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    <TextBlock Text="{Binding [calendar.empty], Source={x:Static loc:Loc.Instance}}" Classes="secondary"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"
+                               IsVisible="{Binding IsSelectedEmpty}" />
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

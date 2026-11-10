@@ -21,10 +21,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private readonly TaskService _taskService;
     private readonly JsonTaskStorage _taskStorage;
     private readonly RecycleBinService _recycleBin;
+    private readonly AttachmentService _attachments = new();
+    private readonly ReminderService _reminders = new();
     private readonly ThemePreferenceService _themePreferences = new();
     private readonly LanguagePreferenceService _languagePreferences = new();
     private readonly DispatcherTimer _refreshTimer;
     private readonly DispatcherTimer _toastTimer;
+    private readonly DispatcherTimer _reminderTimer;
     private string? _loadError;
     private int _totalCount, _doneCount, _overdueCount;
     private int _binCount;
@@ -41,13 +44,15 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         InitializeComponent();
         DataContext = this;
 
-        _recycleBin = new RecycleBinService(new RecycleBinStorage());
+        _recycleBin = new RecycleBinService(new RecycleBinStorage(), _attachments);
         _taskStorage = new JsonTaskStorage();
         _taskService = new TaskService(_taskStorage, _recycleBin);
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(1) };
         _refreshTimer.Tick += (_, _) => Refresh();
         _toastTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3.5) };
         _toastTimer.Tick += (_, _) => HideToast();
+        _reminderTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
+        _reminderTimer.Tick += (_, _) => CheckReminders();
 
         UpdateFilterOptions(null, null);
 
@@ -70,10 +75,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             _refreshTimer.Stop();
             _toastTimer.Stop();
+            _reminderTimer.Stop();
             Loc.Instance.LanguageChanged -= LanguageChanged;
         };
         Refresh();
         _refreshTimer.Start();
+        _reminderTimer.Start();
+        CheckReminders();
     }
 
     public ObservableCollection<TaskCardViewModel> VisibleTasks { get; } = new();
@@ -134,7 +142,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private async void AddTaskClick(object? sender, RoutedEventArgs e)
     {
-        TaskItem? task = await new TaskEditWindow().ShowDialog<TaskItem?>(this);
+        TaskItem? task = await new TaskEditWindow(null, null, _attachments).ShowDialog<TaskItem?>(this);
         if (task == null) return;
         try { _taskService.Add(task); Refresh(); ShowToast("toast.added"); }
         catch (Exception ex) { await ShowError(ex.Message); }
@@ -143,9 +151,15 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private async void EditTaskClick(object? sender, RoutedEventArgs e)
     {
         if (GetTask(sender) is not { } current) return;
-        TaskItem? replacement = await new TaskEditWindow(current).ShowDialog<TaskItem?>(this);
+        TaskItem? replacement = await new TaskEditWindow(current, null, _attachments).ShowDialog<TaskItem?>(this);
         if (replacement == null) return;
-        try { _taskService.Update(replacement); Refresh(); ShowToast("toast.saved"); }
+        try
+        {
+            _taskService.Update(replacement);
+            DeleteRemovedAttachments(current, replacement);
+            Refresh();
+            ShowToast("toast.saved");
+        }
         catch (Exception ex) { await ShowError(ex.Message); }
     }
 
@@ -193,6 +207,20 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             Refresh();
         }
+    }
+
+    /// <summary>Открывает календарь, использующий текущий список активных задач.</summary>
+    private async void OpenCalendarClick(object? sender, RoutedEventArgs e)
+    {
+        await new CalendarWindow(_taskService, _attachments).ShowDialog(this);
+        Refresh();
+    }
+
+    /// <summary>Открывает аналитический срез без задач, находящихся в корзине.</summary>
+    private async void OpenAnalyticsClick(object? sender, RoutedEventArgs e)
+    {
+        await new AnalyticsWindow(_taskService).ShowDialog(this);
+        Refresh();
     }
 
     private void ThemeClick(object? sender, RoutedEventArgs e)
@@ -320,6 +348,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         EmptyMessage = hasFilters ? Loc.T("empty.noResults.message") : Loc.T("empty.noTasks.message");
     }
 
+    /// <summary>Проверяет наступившие напоминания и показывает локальное уведомление в приложении.</summary>
+    private void CheckReminders()
+    {
+        foreach (TaskItem task in _reminders.CheckDue(_taskService))
+            ShowToast("reminder.toast", task.Title);
+    }
+
     /// <summary>Показывает уведомление по ключу локализации на активном языке.</summary>
     /// <param name="key">Ключ уведомления.</param>
     /// <param name="args">Аргументы форматируемой строки, если они нужны.</param>
@@ -338,6 +373,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private async System.Threading.Tasks.Task ShowError(string message)
         => await new MessageDialog(Loc.T("common.error"), message).ShowDialog(this);
     private static TaskItem? GetTask(object? sender) => (sender as Button)?.Tag is TaskCardViewModel card ? card.Task : null;
+    private void DeleteRemovedAttachments(TaskItem previous, TaskItem replacement)
+    {
+        foreach (TaskAttachment attachment in previous.Attachments)
+            if (!replacement.Attachments.Any(current => current.Id == attachment.Id))
+                _attachments.Delete(attachment);
+    }
     private void Raise(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     private static string CurrentThemeName() => Application.Current?.RequestedThemeVariant?.ToString() ?? "Default";
     private void SetField<T>(ref T field, T value, [CallerMemberName] string? name = null)

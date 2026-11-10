@@ -44,6 +44,8 @@ public class RecurringTask : TaskItem
         while (DueDate < DateTime.Now);
 
         State = TaskState.New;
+        ReminderAt = null;
+        ReminderSentAt = null;
     }
 
     /// <summary>Дополняет базовое описание информацией о повторе.</summary>

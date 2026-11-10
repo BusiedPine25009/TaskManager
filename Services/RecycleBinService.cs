@@ -8,11 +8,13 @@ namespace TaskManager.Services;
 public sealed class RecycleBinService
 {
     private readonly RecycleBinStorage _storage;
+    private readonly AttachmentService? _attachments;
     private readonly List<DeletedTask> _entries = new();
 
-    public RecycleBinService(RecycleBinStorage storage)
+    public RecycleBinService(RecycleBinStorage storage, AttachmentService? attachments = null)
     {
         _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+        _attachments = attachments;
     }
 
     public int Count => _entries.Count;
@@ -49,12 +51,16 @@ public sealed class RecycleBinService
 
     public void DeletePermanently(Guid id)
     {
-        _entries.Remove(Find(id));
+        DeletedTask entry = Find(id);
+        _attachments?.DeleteAll(entry.Task);
+        _entries.Remove(entry);
         Save();
     }
 
     public void Clear()
     {
+        foreach (DeletedTask entry in _entries)
+            _attachments?.DeleteAll(entry.Task);
         _entries.Clear();
         Save();
     }
